@@ -1,34 +1,33 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
+// import reactLogo from './assets/react.svg'
+// import viteLogo from '/vite.svg'
 import './App.css'
 
+// Example in App.jsx or Clients.jsx
+import { useEffect, useState } from 'react'
+import { supabase } from './supabase'
+
 function App() {
-  const [count, setCount] = useState(0)
+  const [clients, setClients] = useState([])
+
+  useEffect(() => {
+    async function fetchClients() {
+      let { data, error } = await supabase.from('master_clients').select('*')
+      if (error) console.error(error)
+      else setClients(data)
+    }
+
+    fetchClients()
+  }, [])
 
   return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
+    <div>
+      <h2>Client List</h2>
+      <ul>
+        {clients.map(client => (
+          <li key={client.id}>{client.name}</li>
+        ))}
+      </ul>
+    </div>
   )
 }
 
