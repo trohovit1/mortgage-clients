@@ -1,33 +1,29 @@
-// import reactLogo from './assets/react.svg'
-// import viteLogo from '/vite.svg'
-import './App.css'
-
-// Example in App.jsx or Clients.jsx
-import { useEffect, useState } from 'react'
-import { supabase } from './supabase'
+import { SignedIn, SignedOut, RedirectToSignIn } from '@clerk/clerk-react'
+import { BrowserRouter, Routes, Route } from 'react-router-dom'
+import Dashboard from './dashboard' // Your protected content
+import SignInPage from './sign-in' // Optional custom component
 
 function App() {
-  const [clients, setClients] = useState([])
-
-  useEffect(() => {
-    async function fetchClients() {
-      let { data, error } = await supabase.from('master_clients').select('*')
-      if (error) console.error(error)
-      else setClients(data)
-    }
-
-    fetchClients()
-  }, [])
-
   return (
-    <div>
-      <h2>Client List</h2>
-      <ul>
-        {clients.map(client => (
-          <li key={client.id}>{client.name}</li>
-        ))}
-      </ul>
-    </div>
+    <BrowserRouter>
+      <Routes>
+        <Route
+          path="/mortgage-clients"
+          element={
+            <>
+              <SignedIn>
+                <Dashboard />
+              </SignedIn>
+              <SignedOut>
+                <RedirectToSignIn />
+              </SignedOut>
+            </>
+          }
+        />
+        {/* Optional custom sign-in route */}
+        <Route path="/sign-in" element={<SignInPage />} />
+      </Routes>
+    </BrowserRouter>
   )
 }
 
