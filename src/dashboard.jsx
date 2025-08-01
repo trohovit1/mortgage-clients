@@ -33,7 +33,7 @@ function Dashboard() {
 
   return (
     <div>
-      <button onClick={() => signOut()} style={{ float: 'right' }}>
+      <button onClick={() => signOut({redirectUrl: '/mortgage-clients'})} style={{ float: 'right' }}>
         Sign Out
       </button>
       <h2>Client List</h2>
