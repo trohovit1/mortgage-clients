@@ -1,7 +1,10 @@
 import { SignedIn, SignedOut, RedirectToSignIn } from '@clerk/clerk-react'
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
-import Dashboard from './dashboard' // Your protected content
-import SignInPage from './sign-in' // Optional custom component
+import Dashboard from './Dashboard'
+import MasterDatabase from './MasterDatabase'
+import CurrentClients from './CurrentClients'
+import ProspectDatabase from './ProspectDatabase'
+import SignInPage from './SignIn' // Optional custom component
 
 function App() {
   return (
@@ -20,6 +23,9 @@ function App() {
             </>
           }
         />
+        <Route path="/master-database" element={<MasterDatabase />} />
+        <Route path="/current-clients" element={<CurrentClients />} />
+        <Route path="/prospect-database" element={<ProspectDatabase />} />
         {/* Optional custom sign-in route */}
         <Route path="/sign-in" element={<SignInPage />} />
       </Routes>
