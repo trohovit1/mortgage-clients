@@ -57,9 +57,9 @@ function Dashboard() {
     <div style={{ textAlign: 'center', marginTop: '50px' }}>
       <h1>Welcome, Bill Rohovit.</h1>
 
-      <button style={buttonStyle} onClick={() => navigate('/master-database')}>Master Client Database</button>
-      <button style={buttonStyle} onClick={() => navigate('/current-clients')}>Current Client Data</button>
-      <button style={buttonStyle} onClick={() => navigate('/prospect-database')}>Prospect Database</button>
+      <button style={buttonStyle} onClick={() => navigate('/mortgage-clients/master-database')}>Master Client Database</button>
+      <button style={buttonStyle} onClick={() => navigate('/mortgage-clients/current-clients')}>Current Client Data</button>
+      <button style={buttonStyle} onClick={() => navigate('/mortgage-clients/prospect-database')}>Prospect Database</button>
 
       <button 
         onClick={() => signOut({ redirectUrl: '/' })} 

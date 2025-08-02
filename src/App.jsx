@@ -23,9 +23,9 @@ function App() {
             </>
           }
         />
-        <Route path="/master-database" element={<MasterDatabase />} />
-        <Route path="/current-clients" element={<CurrentClients />} />
-        <Route path="/prospect-database" element={<ProspectDatabase />} />
+        <Route path="/mortgage-clients/master-database" element={<MasterDatabase />} />
+        <Route path="/mortgage-clients/current-clients" element={<CurrentClients />} />
+        <Route path="/mortgage-clients/prospect-database" element={<ProspectDatabase />} />
         {/* Optional custom sign-in route */}
         <Route path="/sign-in" element={<SignInPage />} />
       </Routes>
