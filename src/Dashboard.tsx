@@ -7,7 +7,8 @@ import './App.css'
 // import { supabase } from './supabase'
 // import Unauthorized from './unauthorized'
 import { useAuth } from '@clerk/clerk-react'
-import { useNavigate } from 'react-router-dom'
+// import { useNavigate } from 'react-router-dom'
+import {DataTableDemo} from "./DataTable"
 
 
 function Dashboard() {
@@ -22,7 +23,7 @@ function Dashboard() {
     fontSize: '16px',
     cursor: 'pointer',
   }
-  const navigate = useNavigate()
+//   const navigate = useNavigate()
 
 //   useEffect(() => {
 //     async function fetchClients() {
@@ -57,12 +58,14 @@ function Dashboard() {
     <div style={{ textAlign: 'center', marginTop: '50px' }}>
       <h1>Welcome, Bill Rohovit.</h1>
 
-      <button style={buttonStyle} onClick={() => navigate('/mortgage-clients/master-database')}>Master Client Database</button>
-      <button style={buttonStyle} onClick={() => navigate('/mortgage-clients/current-clients')}>Current Client Data</button>
-      <button style={buttonStyle} onClick={() => navigate('/mortgage-clients/prospect-database')}>Prospect Database</button>
+      <div className="w-full max-w-5xl bg-card rounded-xl shadow-md p-6 mb-10 text-card-foreground">
+        <DataTableDemo />
+        </div>
+
+      {/* <button style={buttonStyle} onClick={() => navigate('/mortgage-clients/master-database')}>Master Client Database</button> */}
 
       <button 
-        onClick={() => signOut({ redirectUrl: '/' })} 
+        onClick={() => signOut({ redirectUrl: '/mortgage-clients' })} 
         style={{ ...buttonStyle, backgroundColor: '#0000FF', color: 'white', marginTop: '40px' }}
       >
         Sign Out

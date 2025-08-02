@@ -11,6 +11,7 @@
       "noEmit": false
     },
     "include": ["scripts", "lib", "server"],
-    "exclude": ["node_modules", ".next", "dist"]
+    "exclude": ["node_modules", ".next", "dist"],
+    "composite": true
   }
   

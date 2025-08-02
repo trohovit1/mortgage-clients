@@ -1,9 +1,8 @@
 import { SignedIn, SignedOut, RedirectToSignIn } from '@clerk/clerk-react'
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
-import Dashboard from './Dashboard'
-import MasterDatabase from './MasterDatabase'
-import CurrentClients from './CurrentClients'
-import ProspectDatabase from './ProspectDatabase'
+import Dashboard from './dashboard'
+import ClientDetailPage from "./Client_Page"
+// import MasterDatabase from './MasterDatabase'
 import SignInPage from './SignIn' // Optional custom component
 
 function App() {
@@ -23,11 +22,10 @@ function App() {
             </>
           }
         />
-        <Route path="/mortgage-clients/master-database" element={<MasterDatabase />} />
-        <Route path="/mortgage-clients/current-clients" element={<CurrentClients />} />
-        <Route path="/mortgage-clients/prospect-database" element={<ProspectDatabase />} />
+        {/* <Route path="/mortgage-clients/master-database" element={<MasterDatabase />} /> */}
         {/* Optional custom sign-in route */}
         <Route path="/sign-in" element={<SignInPage />} />
+        <Route path="/clients/:id" element={<ClientDetailPage />} />
       </Routes>
     </BrowserRouter>
   )
