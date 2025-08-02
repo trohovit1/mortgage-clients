@@ -25,7 +25,7 @@ function MasterDatabase() {
       </div>
 
       <button
-        onClick={() => navigate(-1)}
+        onClick={() => navigate("/mortgage-clients")}
         className="px-6 py-3 rounded-md bg-primary text-primary-foreground hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-ring transition"
       >
         Back

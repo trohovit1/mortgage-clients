@@ -8,7 +8,7 @@ function CurrentClients() {
     <div style={{ textAlign: 'center', marginTop: '50px' }}>
       <h1>Current Client Data</h1>
       <button
-        onClick={() => navigate(-1)}
+        onClick={() => navigate("/mortgage-clients")}
         style={{ marginTop: '20px', padding: '10px 20px', cursor: 'pointer' }}
       >
         Back

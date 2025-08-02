@@ -8,7 +8,7 @@ function ProspectDatabase() {
     <div style={{ textAlign: 'center', marginTop: '50px' }}>
       <h1>Prospect Database</h1>
       <button
-        onClick={() => navigate(-1)}
+        onClick={() => navigate("/mortgage-clients")}
         style={{ marginTop: '20px', padding: '10px 20px', cursor: 'pointer' }}
       >
         Back
