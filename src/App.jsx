@@ -5,7 +5,9 @@ import ClientDetailPage from "./Client_Page"
 // import MasterDatabase from './MasterDatabase'
 import SignInPage from './SignIn' // Optional custom component
 
+
 function App() {
+ 
   return (
     <BrowserRouter>
       <Routes>
