@@ -1,83 +1,59 @@
-// import reactLogo from './assets/react.svg'
-// import viteLogo from '/vite.svg'
 import './App.css'
-
-// Example in App.jsx or Clients.jsx
-// import { useEffect, useState } from 'react'
-// import { supabase } from './supabase'
-// import Unauthorized from './unauthorized'
-import { useAuth } from '@clerk/clerk-react'
-// import { useNavigate } from 'react-router-dom'
-import {DataTableDemo} from "./DataTable"
+import { useAuth, useUser } from '@clerk/clerk-react'
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Client } from './clients' // Adjust the import based on your project structure
-import { mockClients } from './clients'
+import { createClient } from '@supabase/supabase-js'
 
 
 function Dashboard() {
-//   const [clients, setClients] = useState([])
   const { signOut } = useAuth()
-
-  const buttonStyle = {
-    display: 'block',
-    width: '200px',
-    margin: '10px auto',
-    padding: '10px',
-    fontSize: '16px',
-    cursor: 'pointer',
-  }
-
-const [clients, setClients] = useState<Client[]>([])
+  const [clients, setClients] = useState<Client[]>([])
+  const [loading, setLoading] = useState(true)
   const [statusFilter, setStatusFilter] = useState<'all' | Client['status']>('all')
   const [searchTerm, setSearchTerm] = useState('')
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc')
   const navigate = useNavigate()
-
-useEffect(() => {
-  setClients(mockClients) // Replace with actual data fetching logic
-})
-
-//   useEffect(() => {
-//     async function fetchClients() {
-//       let { data, error } = await supabase.from('master_clients').select('*')
-//       if (error) {
-//         console.error('Supabase Error:', error)
-//         setError(error)
-//         return
-//       }
-//       else setClients(data)
-//     }
-
-//     fetchClients()
-//   }, [])
+  const { user } = useUser()
+  const supabase = createClient(import.meta.env.VITE_SUPABASE_URL, import.meta.env.VITE_SUPABASE_ANON_KEY)
 
 
-//   return (
-//     <div>
-//       <button onClick={() => signOut({redirectUrl: '/'})} style={{ float: 'right' }}>
-//         Sign Out
-//       </button>
-//       <h2>Client List</h2>
-//       <ul>
-//         {clients.map(client => (
-//           <li key={client.id}>{client.name}</li>
-//         ))}
-//       </ul>
-//     </div>
-//   )
+  useEffect(() => {
+    if (!user?.primaryEmailAddress?.emailAddress) return
 
-// Filter by status
+    const fetchClients = async () => {
+      const email = user.primaryEmailAddress.emailAddress
+
+      const { data, error } = await supabase
+        .from('clients') // your Supabase table name
+        .select('*')
+        .eq('owner', email)
+
+      if (error) {
+        console.error('Error fetching clients:', error)
+      } else {
+        setClients(data || [])
+      }
+
+      setLoading(false)
+    }
+
+    fetchClients()
+  }, [])
+  // Filter by status
   let filteredClients = clients.filter(client =>
-    statusFilter === 'all' ? true : client.status === statusFilter
+    statusFilter === 'all' ? true : client.status == statusFilter
   )
 
   // Filter by search term in name (case insensitive)
   if (searchTerm.trim() !== '') {
+    const lowerSearch = searchTerm.toLowerCase()
     filteredClients = filteredClients.filter(client =>
-      client.name.toLowerCase().includes(searchTerm.toLowerCase())
+      client.first_name?.toLowerCase().includes(lowerSearch) ||
+      client.last_name?.toLowerCase().includes(lowerSearch)
     )
   }
+
 
   // Sort by date_of_contract
   filteredClients.sort((a, b) => {
@@ -122,25 +98,31 @@ useEffect(() => {
         >
           <thead>
             <tr>
-              <label style={{ marginBottom: '30%' }}>
-                Status
-                <select
-                  value={statusFilter}
-                  onChange={e => setStatusFilter(e.target.value as any)}
-                  style={{marginTop: '13%'}}
-                >
-                  <option value="all">All</option>
-                  <option value="current">Current</option>
-                  <option value="prospect">Prospect</option>
-                  <option value="inactive">Inactive</option>
-                  <option value="actively pursuing">Actively Pursuing</option>
-                </select>
-              </label>
-              <th>Name</th>
+              <th>
+                <div style={{ marginBottom: 20 }}>
+                  <label>
+                    Status Filter:
+                    <select
+                      value={statusFilter}
+                      onChange={e => setStatusFilter(e.target.value as any)}
+                    >
+                      <option value="all">All</option>
+                      <option value="Active Prospect">Active Prospect</option>
+                      <option value="Customer">Customer</option>
+                      <option value="New Contact">New Contact</option>
+                      <option value="Prospect">Prospect</option>
+                    </select>
+                  </label>
+                </div>
+              </th>
+              <th>First Name</th>
+              <th>Last Name</th>
               <th>Address</th>
+              <th>City</th>
+              <th>State</th>
+              <th>Zipcode</th>
               <th>Phone</th>
               <th>Email</th>
-              <th>Contact Type</th>
               <th>Current Amount</th>
               <th>Prospect Amount</th>
               <th>Rate</th>
@@ -162,7 +144,6 @@ useEffect(() => {
                 </button>
               </th>
               <th>Client Source</th>
-              <th>Contact History</th>
             </tr>
           </thead>
           <tbody>
@@ -173,17 +154,19 @@ useEffect(() => {
                 style={{ cursor: 'pointer', backgroundColor: '#060505ff' }}
               >
                 <td>{client.status}</td>
-                <td>{client.name}</td>
+                <td>{client.first_name}</td>
+                <td>{client.last_name}</td>
                 <td>{client.address}</td>
-                <td>{client.phone}</td>
+                <td>{client.city}</td>
+                <td>{client.state}</td>
+                <td>{client.zipcode}</td>
+                <td>{client.home_phone}</td>
                 <td>{client.email}</td>
-                <td>{client.contact_type}</td>
-                <td>${client.current_amount.toLocaleString()}</td>
-                <td>${client.prospect_amount.toLocaleString()}</td>
+                <td>${client.current_amount}</td>
+                <td>${client.prospect_amount}</td>
                 <td>{client.rate}%</td>
                 <td>{new Date(client.date_of_contract).toLocaleDateString()}</td>
                 <td>{client.client_source}</td>
-                <td>{client.contact_history.join(', ')}</td>
               </tr>
             ))}
             {filteredClients.length === 0 && (
@@ -197,7 +180,7 @@ useEffect(() => {
         </table>
       </div>
       <button
-  onClick={() => signOut({ redirectUrl: '/mortgageClients' })}
+  onClick={() => signOut({ redirectUrl: '/mortgage-clients' })}
   style={{
     position: 'absolute',
     top: 20,

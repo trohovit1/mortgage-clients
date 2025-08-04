@@ -1,30 +1,54 @@
+import { useUser } from "@clerk/clerk-react"
+import { createClient } from "@supabase/supabase-js"
+import { useEffect, useState } from "react"
 import { useParams, useNavigate } from "react-router-dom"
+import { supabase } from "./supabase"
+import { Client } from "./clients" // Adjust the import based on your project structure
 
 
 export default function ClientDetailPage() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
+  const [client, setClient] = useState<any>(null)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+
+  useEffect(() => {
+    if (!id) return
+
+    const fetchClient = async () => {
+      setLoading(true)
+      const { data, error } = await supabase
+        .from("clients")
+        .select("*")
+        .eq("id", id)
+
+      if (error) {
+        setError("Failed to load client data.")
+        console.error(error)
+      } else {
+        setClient(data[0])
+      }
+      setLoading(false)
+    }
+
+    fetchClient()
+  }, [id])
 
   if (!id) {
     return <div>Error: No client ID provided.</div>
   }
 
-  // Mock client data for now
-  const client = {
-    id,
-    name: "John Doe",
-    address: "123 Main St",
-    email: "john@example.com",
-    phone: "555-555-5555",
-    status: "current",
-    contact_type: "email",
-    contact_history: [],
-    current_amount: 1000,
-    prospect_amount: 0,
-    rate: 3.5,
-    date_of_contract: new Date(),
-    client_source: "Referral",
-    notes: ["First meeting was successful"],
+  if (loading) {
+    return <div>Loading client data...</div>
+  }
+
+  if (error) {
+    return <div>{error}</div>
+  }
+
+  if (!client) {
+    return <div>No client found with ID: {id}</div>
   }
 
   return (
@@ -42,12 +66,12 @@ export default function ClientDetailPage() {
         <p><strong>Phone:</strong> {client.phone}</p>
         <p><strong>Status:</strong> {client.status}</p>
         <p><strong>Contact Type:</strong> {client.contact_type}</p>
-        <p><strong>Current Amount:</strong> {client.current_amount}</p>
-        <p><strong>Prospect Amount:</strong> {client.prospect_amount}</p>
-        <p><strong>Rate:</strong> {client.rate}</p>
-        <p><strong>Date of Contract:</strong> {client.date_of_contract.toString()}</p>
+        <p><strong>Current Amount:</strong> ${client.current_amount}</p>
+        <p><strong>Prospect Amount:</strong> ${client.prospect_amount}</p>
+        <p><strong>Rate:</strong> {client.rate}%</p>
+        <p><strong>Date of Contract:</strong> {new Date(client.date_of_contract).toLocaleDateString()}</p>
         <p><strong>Client Source:</strong> {client.client_source}</p>
-        <p><strong>Notes:</strong> {client.notes.join(", ")}</p>
+        <p><strong>Notes:</strong> {client.notes}</p>
       </div>
     </div>
   )
