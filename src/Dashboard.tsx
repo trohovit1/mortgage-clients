@@ -1,9 +1,13 @@
+import './index.css'
 import './App.css'
 import { useAuth, useUser } from '@clerk/clerk-react'
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Client } from './clients' // Adjust the import based on your project structure
-import { createClient } from '@supabase/supabase-js'
+import { Client } from './clients'
+import { Button } from "./components/ui/button"
+import { ClientFormDialog } from './clientAddDialog'
+import { supabase } from './supabase'
+import { FaTrash } from 'react-icons/fa';
 
 
 function Dashboard() {
@@ -15,58 +19,76 @@ function Dashboard() {
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc')
   const navigate = useNavigate()
   const { user } = useUser()
-  const supabase = createClient(import.meta.env.VITE_SUPABASE_URL, import.meta.env.VITE_SUPABASE_ANON_KEY)
 
+useEffect(() => {
+  if (!user?.primaryEmailAddress?.emailAddress) return;
 
-  useEffect(() => {
-    if (!user?.primaryEmailAddress?.emailAddress) return
+  const fetchClients = async () => {
+    const email = user.primaryEmailAddress.emailAddress;
 
-    const fetchClients = async () => {
-      const email = user.primaryEmailAddress.emailAddress
+    let query = supabase
+      .from('clients')
+      .select('*')
+      .eq('owner', email);
 
-      const { data, error } = await supabase
-        .from('clients') // your Supabase table name
-        .select('*')
-        .eq('owner', email)
-
-      if (error) {
-        console.error('Error fetching clients:', error)
-      } else {
-        setClients(data || [])
-      }
-
-      setLoading(false)
+    // Apply status filter if not 'all'
+    if (statusFilter !== 'all') {
+      query = query.eq('status', statusFilter);
     }
 
-    fetchClients()
-  }, [])
-  // Filter by status
-  let filteredClients = clients.filter(client =>
-    statusFilter === 'all' ? true : client.status == statusFilter
-  )
+    // Apply search filter if searchTerm is not empty
+    if (searchTerm.trim() !== '') {
+      const search = `%${searchTerm.trim()}%`;
+      query = query.or(`first_name.ilike.${search},last_name.ilike.${search}`);
+    }
 
-  // Filter by search term in name (case insensitive)
-  if (searchTerm.trim() !== '') {
-    const lowerSearch = searchTerm.toLowerCase()
-    filteredClients = filteredClients.filter(client =>
-      client.first_name?.toLowerCase().includes(lowerSearch) ||
-      client.last_name?.toLowerCase().includes(lowerSearch)
-    )
-  }
+    // Apply sorting
+    query = query.order('date_of_contract', { ascending: sortDirection === 'asc' });
+
+    // Optionally limit results if you want, or remove limit if you want all
+    // query = query.limit(2000);
+
+    const { data, error } = await query;
+
+    if (error) {
+      console.error('Error fetching clients:', error);
+    } else {
+      setClients(data || []);
+    }
+
+    setLoading(false);
+  };
+
+  fetchClients();
+}, [statusFilter, searchTerm, sortDirection, user]);
+
+  // // Filter by status
+  // let filteredClients = clients.filter(client =>
+  //   statusFilter === 'all' ? true : client.status == statusFilter
+  // )
+
+  // // Filter by search term in name (case insensitive)
+  // if (searchTerm.trim() !== '') {
+  //   const lowerSearch = searchTerm.toLowerCase()
+  //   filteredClients = filteredClients.filter(client =>
+  //     client.first_name?.toLowerCase().includes(lowerSearch) ||
+  //     client.last_name?.toLowerCase().includes(lowerSearch)
+  //   )
+  // }
 
 
-  // Sort by date_of_contract
-  filteredClients.sort((a, b) => {
-    const dateA = new Date(a.date_of_contract).getTime()
-    const dateB = new Date(b.date_of_contract).getTime()
-    return sortDirection === 'asc' ? dateA - dateB : dateB - dateA
-  })
+  // // Sort by date_of_contract
+  // filteredClients.sort((a, b) => {
+  //   const dateA = new Date(a.date_of_contract).getTime()
+  //   const dateB = new Date(b.date_of_contract).getTime()
+  //   return sortDirection === 'asc' ? dateA - dateB : dateB - dateA
+  // })
 
   return (
-    <div style={{ textAlign: 'center', marginTop: 50 }}>
-      <h1>Welcome, Bill Rohovit.</h1>
+    <div style={{ textAlign: 'center', marginTop: 50}}>
+      <h1 style={{color: 'lightblue', fontSize: '40px'}}>Welcome, Bill Rohovit.</h1>
 
-      <div style={{ marginBottom: 20, marginTop: 20 }}>
+      <div style={{ marginBottom: 20, marginTop: 20, color: 'lightgray' }}>
 
         <label>
           Search by Name:{' '}
@@ -98,6 +120,7 @@ function Dashboard() {
         >
           <thead>
             <tr>
+              <th><FaTrash size={24} color="red" /></th>
               <th>
                 <div style={{ marginBottom: 20 }}>
                   <label>
@@ -147,11 +170,11 @@ function Dashboard() {
             </tr>
           </thead>
           <tbody>
-            {filteredClients.map(client => (
+            {clients.map(client => (
               <tr
                 key={client.id}
                 onClick={() => navigate(`/clients/${client.id}`)}
-                style={{ cursor: 'pointer', backgroundColor: '#060505ff' }}
+                style={{ cursor: 'pointer' }}
               >
                 <td>{client.status}</td>
                 <td>{client.first_name}</td>
@@ -169,7 +192,7 @@ function Dashboard() {
                 <td>{client.client_source}</td>
               </tr>
             ))}
-            {filteredClients.length === 0 && (
+            {clients.length === 0 && (
               <tr>
                 <td colSpan={12} style={{ textAlign: 'center', padding: 20 }}>
                   No clients found.
@@ -179,23 +202,22 @@ function Dashboard() {
           </tbody>
         </table>
       </div>
-      <button
-  onClick={() => signOut({ redirectUrl: '/mortgage-clients' })}
-  style={{
-    position: 'absolute',
-    top: 20,
-    left: 20,
-    padding: '10px 16px',
-    backgroundColor: '#333',
-    color: 'white',
-    border: 'none',
-    borderRadius: 4,
-    cursor: 'pointer',
-  }}
->
-  Sign Out
-</button>
-
+      <Button
+        onClick={() => signOut({ redirectUrl: '/mortgage-clients' })}
+        style={{
+          position: 'absolute',
+          top: 20,
+          left: 20,
+          padding: '10px 16px',
+          backgroundColor: 'gray',
+          color: 'white',
+          border: 'none',
+          borderRadius: 4,
+          cursor: 'pointer',
+        }} className={undefined} variant={"outline"} size={undefined}      >
+        Sign Out
+      </Button>
+      <ClientFormDialog />
     </div>
     
   )

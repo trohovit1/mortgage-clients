@@ -1,7 +1,7 @@
 import { SignedIn, SignedOut, RedirectToSignIn } from '@clerk/clerk-react'
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import Dashboard from './dashboard'
-import ClientDetailPage from "./Client_Page"
+import ClientDetailPage from "./ClientPage"
 import SignInPage from './SignIn'
 
 

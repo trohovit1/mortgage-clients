@@ -43,7 +43,7 @@
 
 :root {
   --radius: 0.625rem;
-  --background: oklch(1 0 0);
+  --background: oklch(32.223% 0.00529 286.005);
   --foreground: oklch(0.145 0 0);
   --card: oklch(1 0 0);
   --card-foreground: oklch(0.145 0 0);
@@ -125,33 +125,6 @@
   text-align: center;
 }
 
-.logo {
-  height: 6em;
-  padding: 1.5em;
-  will-change: filter;
-  transition: filter 300ms;
-}
-.logo:hover {
-  filter: drop-shadow(0 0 2em #646cffaa);
-}
-.logo.react:hover {
-  filter: drop-shadow(0 0 2em #61dafbaa);
-}
-
-@keyframes logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
-}
-
-@media (prefers-reduced-motion: no-preference) {
-  a:nth-of-type(2) .logo {
-    animation: logo-spin infinite 20s linear;
-  }
-}
 
 .card {
   padding: 2em;
@@ -177,7 +150,8 @@ caption {
 
 thead,
 tfoot {
-  background-color: rgb(29 31 40);
+  background-color: rgb(37, 44, 75);
+  color: rgb(199, 199, 201);
 }
 
 th,
@@ -191,7 +165,11 @@ td:last-of-type {
 }
 
 tbody > tr:nth-of-type(even) {
-  background-color: rgb(29, 31, 40);
+  background-color: rgb(114, 123, 163);
+}
+
+tbody > tr:nth-of-type(odd) {
+  background-color: rgb(84, 93, 131);
 }
 
 tfoot th {
@@ -200,4 +178,29 @@ tfoot th {
 
 tfoot td {
   font-weight: bold;
+}
+
+/* Example from shadcn/ui base styles */
+[data-state="open"] {
+  display: flex;
+}
+.dialog-overlay {
+  background-color: rgba(0, 0, 0, 0.5);
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+}
+.dialog-content {
+  position: fixed;
+  z-index: 50;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  background: white;
+  padding: 2rem;
+  border-radius: 0.5rem;
+}
+
+.dialog-bg-lightblue {
+  background-color: #f5faff; /* Very light blue */
 }
