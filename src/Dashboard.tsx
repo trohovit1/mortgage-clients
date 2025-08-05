@@ -8,6 +8,10 @@ import { Button } from "./components/ui/button"
 import { ClientFormDialog } from './clientAddDialog'
 import { supabase } from './supabase'
 import { FaTrash } from 'react-icons/fa';
+import { Dialog } from '@radix-ui/react-dialog'
+import { DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from './components/ui/dialog'
+import { Label } from './components/ui/label'
+import { Input } from './components/ui/input'
 
 
 function Dashboard() {
@@ -19,6 +23,9 @@ function Dashboard() {
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc')
   const navigate = useNavigate()
   const { user } = useUser()
+  const [clientToDelete, setClientToDelete] = useState<Client | null>(null);
+  const [deleteOpen, setDeleteOpen] = useState(false);
+
 
 useEffect(() => {
   if (!user?.primaryEmailAddress?.emailAddress) return;
@@ -29,7 +36,9 @@ useEffect(() => {
     let query = supabase
       .from('clients')
       .select('*')
-      .eq('owner', email);
+      .eq('owner', email)
+      .is('deleted', null) 
+      .limit(100);
 
     // Apply status filter if not 'all'
     if (statusFilter !== 'all') {
@@ -62,27 +71,27 @@ useEffect(() => {
   fetchClients();
 }, [statusFilter, searchTerm, sortDirection, user]);
 
-  // // Filter by status
-  // let filteredClients = clients.filter(client =>
-  //   statusFilter === 'all' ? true : client.status == statusFilter
-  // )
+const handleDelete = async () => {
+  if (!clientToDelete || !user?.primaryEmailAddress?.emailAddress) return;
 
-  // // Filter by search term in name (case insensitive)
-  // if (searchTerm.trim() !== '') {
-  //   const lowerSearch = searchTerm.toLowerCase()
-  //   filteredClients = filteredClients.filter(client =>
-  //     client.first_name?.toLowerCase().includes(lowerSearch) ||
-  //     client.last_name?.toLowerCase().includes(lowerSearch)
-  //   )
-  // }
+  const email = user.primaryEmailAddress.emailAddress;
 
+  const { error } = await supabase
+    .from('clients')
+    .update({ deleted: new Date().toISOString() })
+    .eq('id', clientToDelete.id)
+    .eq('owner', email);
 
-  // // Sort by date_of_contract
-  // filteredClients.sort((a, b) => {
-  //   const dateA = new Date(a.date_of_contract).getTime()
-  //   const dateB = new Date(b.date_of_contract).getTime()
-  //   return sortDirection === 'asc' ? dateA - dateB : dateB - dateA
-  // })
+  if (error) {
+    console.error('Error deleting client:', error);
+    alert('Failed to delete client.');
+  }
+
+  setClientToDelete(null);
+  setDeleteOpen(false);
+  setClients(prev => prev.filter(c => c.id !== clientToDelete.id));
+}
+
 
   return (
     <div style={{ textAlign: 'center', marginTop: 50}}>
@@ -120,7 +129,7 @@ useEffect(() => {
         >
           <thead>
             <tr>
-              <th><FaTrash size={24} color="red" /></th>
+              <th></th>
               <th>
                 <div style={{ marginBottom: 20 }}>
                   <label>
@@ -166,16 +175,45 @@ useEffect(() => {
                   {sortDirection === 'asc' ? '▲' : '▼'}
                 </button>
               </th>
-              <th>Client Source</th>
             </tr>
           </thead>
           <tbody>
             {clients.map(client => (
               <tr
                 key={client.id}
-                onClick={() => navigate(`/clients/${client.id}`)}
                 style={{ cursor: 'pointer' }}
+                onClick={() => navigate(`/clients/${client.id}`)}
               >
+                <td onClick={(e) => e.stopPropagation()}>
+                  <Dialog open={deleteOpen} onOpenChange={setDeleteOpen}>
+                    <DialogTrigger asChild>
+                      <Button
+                        variant="ghost"
+                        onClick={() => {
+                          setClientToDelete(client);
+                        }}
+                      >
+                        <FaTrash size={20} color="red" />
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent className="sm:max-w-md">
+                      <DialogHeader className={undefined}>
+                        <DialogTitle className={undefined}>Are you sure you want to delete this client?</DialogTitle>
+                        <DialogDescription className={undefined}>This action cannot be undone.</DialogDescription>
+                      </DialogHeader>
+                      <DialogFooter className="sm:justify-start">
+                        <DialogClose asChild>
+                          <Button type="button" variant="destructive" onClick={handleDelete}>
+                            Delete
+                          </Button>
+                        </DialogClose>
+                        <DialogClose asChild>
+                          <Button type="button" variant="secondary">Cancel</Button>
+                        </DialogClose>
+                      </DialogFooter>
+                    </DialogContent>
+                  </Dialog>
+                </td>
                 <td>{client.status}</td>
                 <td>{client.first_name}</td>
                 <td>{client.last_name}</td>
@@ -189,16 +227,8 @@ useEffect(() => {
                 <td>${client.prospect_amount}</td>
                 <td>{client.rate}%</td>
                 <td>{new Date(client.date_of_contract).toLocaleDateString()}</td>
-                <td>{client.client_source}</td>
               </tr>
             ))}
-            {clients.length === 0 && (
-              <tr>
-                <td colSpan={12} style={{ textAlign: 'center', padding: 20 }}>
-                  No clients found.
-                </td>
-              </tr>
-            )}
           </tbody>
         </table>
       </div>

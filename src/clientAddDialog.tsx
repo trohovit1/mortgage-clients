@@ -211,6 +211,7 @@ export function ClientFormDialog() {
     } else {
         alert("Client saved successfully!")
         setFormData(initialFormData) // reset form
+        setOpenDialog(false)
     }
 
     }
