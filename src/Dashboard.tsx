@@ -85,6 +85,8 @@ const handleDelete = async () => {
   if (error) {
     console.error('Error deleting client:', error);
     alert('Failed to delete client.');
+  } else {
+    alert('Client deleted successfully.');
   }
 
   setClientToDelete(null);

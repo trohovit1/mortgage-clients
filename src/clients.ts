@@ -2,7 +2,7 @@ import { StringifyOptions } from "node:querystring"
 
 export type Client = {
   id: number
-  status: 'Customer' | 'Active Prospect' | 'Prospect' | 'New Contact'
+  status: 'Customer' | 'Active Prospect' | 'Prospect' | 'New Contact' | ''
   first_name: string
   last_name: string
   co_borrower: string
