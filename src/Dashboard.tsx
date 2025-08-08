@@ -185,6 +185,17 @@ const handleDelete = async () => {
                 onClick={() => navigate(`/clients/${client.id}`)}
               >
                 <td onClick={(e) => e.stopPropagation()}>
+                  <Button
+                    variant="ghost"
+                    onClick={() => {
+                      setClientToDelete(client)
+                      setDeleteOpen(true)
+                    }}
+                  >
+                    <FaTrash size={20} color="red" />
+                  </Button>
+                </td>
+                {/* <td onClick={(e) => e.stopPropagation()}>
                   <Dialog open={deleteOpen} onOpenChange={setDeleteOpen}>
                     <DialogTrigger asChild>
                       <Button
@@ -196,7 +207,7 @@ const handleDelete = async () => {
                         <FaTrash size={20} color="red" />
                       </Button>
                     </DialogTrigger>
-                    <DialogContent className="sm:max-w-md">
+                    <DialogContent className="sm:max-w-md dialog-bg-lightblue">
                       <DialogHeader className={undefined}>
                         <DialogTitle className={undefined}>Are you sure you want to delete this client?</DialogTitle>
                         <DialogDescription className={undefined}>This action cannot be undone.</DialogDescription>
@@ -212,8 +223,8 @@ const handleDelete = async () => {
                         </DialogClose>
                       </DialogFooter>
                     </DialogContent>
-                  </Dialog>
-                </td>
+                  </Dialog> */}
+                {/* </td> */}
                 <td>{client.status}</td>
                 <td>{client.first_name}</td>
                 <td>{client.last_name}</td>
@@ -248,6 +259,32 @@ const handleDelete = async () => {
         Sign Out
       </Button>
       <ClientFormDialog />
+      {clientToDelete && (
+        <Dialog open={deleteOpen} onOpenChange={setDeleteOpen}>
+          <DialogContent
+            className="w-[500px] bg-gray-200 rounded-lg p-6 space-y-4 text-center flex flex-col items-center justify-center"
+          >
+            <DialogTitle className="text-lg font-semibold">
+              Are you sure you want to delete this client?
+            </DialogTitle>
+            <DialogDescription className="text-sm text-muted-foreground">
+              This action cannot be undone.
+            </DialogDescription>
+            <div className="flex gap-4 pt-4">
+              <DialogClose asChild>
+                <Button type="button" variant="secondary">
+                  Cancel
+                </Button>
+              </DialogClose>
+              <DialogClose asChild>
+                <Button type="button" variant="destructive" onClick={handleDelete}>
+                  Delete
+                </Button>
+              </DialogClose>
+            </div>
+          </DialogContent>
+        </Dialog>
+      )}
     </div>
     
   )

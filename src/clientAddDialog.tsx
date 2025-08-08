@@ -22,6 +22,7 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover"
 import './App.css'
+import { usStates } from "./states"
 
 
 type ClientFormData = {
@@ -102,6 +103,82 @@ const initialFormData: ClientFormData = {
   zipcode: "",
 }
 
+function InputWithLabel({ id, label, value, onChange, type = "text" }) {
+  return (
+    <div className="flex flex-col">
+      <label htmlFor={id} className="text-sm font-medium text-gray-700">{label}</label>
+      <input id={id} name={id} value={value} onChange={onChange} type={type}
+       className="w-full rounded-md border border-gray-300 p-2"/>
+    </div>
+  )
+}
+
+function SelectWithLabel({ id, label, value, onChange, options }) {
+  return (
+    <div className="flex flex-col">
+      <label htmlFor={id} className="text-sm font-medium text-gray-700">{label}</label>
+      <select id={id} name={id} value={value} onChange={onChange} className="w-full rounded-md border border-gray-300 p-2">
+        {options.map(opt => (
+          <option key={opt} value={opt}>{opt}</option>
+        ))}
+      </select>
+    </div>
+  )
+}
+
+function DatePickerInput({ id, label, value, onChange, date, setDate }) {
+  const [open, setOpen] = React.useState(false)
+  const [month, setMonth] = React.useState(date || new Date())
+
+  return (
+    <div className="flex flex-col">
+      <label htmlFor={id} className="text-sm font-medium text-gray-700">{label}</label>
+      <Popover open={open} onOpenChange={setOpen}>
+        <PopoverTrigger asChild>
+          <div className="relative flex">
+            <Input
+              id={id}
+              value={value}
+              placeholder="MM/DD/YYYY"
+              onChange={(e) => {
+                const newDate = new Date(e.target.value)
+                onChange(e.target.value)
+                if (newDate) {
+                  setDate(newDate)
+                  setMonth(newDate)
+                }
+              }}
+              onFocus={() => setOpen(true)}  // open on focus
+              className="pr-10"
+              type={undefined}
+            />
+            <Button type="button" variant="ghost" className="absolute top-1/2 right-2 transform -translate-y-1/2 size-6" aria-label="Toggle calendar">
+              <CalendarIcon className="size-4" />
+            </Button>
+          </div>
+        </PopoverTrigger>
+
+        <PopoverContent className="w-auto p-0">
+          <Calendar
+            mode="single"
+            selected={date}
+            captionLayout="dropdown"
+            month={month}
+            onMonthChange={setMonth}
+            onSelect={(selectedDate) => {
+              setDate(selectedDate)
+              onChange(formatDate(selectedDate))
+              setOpen(false)
+            }}
+          />
+        </PopoverContent>
+      </Popover>
+    </div>
+  )
+}
+
+
+
 function formatDate(date: Date | undefined) {
   if (!date) {
     return ""
@@ -123,17 +200,16 @@ export function ClientFormDialog() {
     const { user } = useUser()
   const [formData, setFormData] = useState<ClientFormData>(initialFormData)
   const [open1, setOpen1] = React.useState(false)
-  const [date1, setDate1] = React.useState<Date | undefined>(
-    new Date("2025-06-01")
-  )
+  const [date1, setDate1] = React.useState<Date | undefined>()
   const [month1, setMonth1] = React.useState<Date | undefined>(date1)
   const [value1, setValue1] = React.useState(formatDate(date1))
   const [open2, setOpen2] = React.useState(false)
-  const [date2, setDate2] = React.useState<Date | undefined>(
-    new Date("2025-06-01")
-  )
+  const [date2, setDate2] = React.useState<Date | undefined>()
   const [month2, setMonth2] = React.useState<Date | undefined>(date1)
   const [value2, setValue2] = React.useState(formatDate(date1))
+
+  const [notesText, setNotesText] = React.useState("")
+
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target
@@ -152,6 +228,7 @@ export function ClientFormDialog() {
         .select("id")  // Just need the id to check existence
         .eq("first_name", formData.first_name)
         .eq("last_name", formData.last_name)
+        .is('deleted', null)
         .limit(1);
 
     if (existingClients && existingClients.length > 0) {
@@ -186,7 +263,7 @@ export function ClientFormDialog() {
         last_contact: date2,
         loan_type: formData.loan_type,
         mobile_phone: formData.mobile_phone,
-        notes: formData.notes,
+        notes: notesText ? [notesText] : [],
         old_contact: formData.old_contact,
         property_order: formData.property_order,
         prospect_amount: formData.prospect_amount,
@@ -221,16 +298,12 @@ const [openDialog, setOpenDialog] = React.useState(false)
   
 
   return (
-    <Dialog className="max-h-[90vh] overflow-y-auto bg-blue-50" style={{ maxHeight: '90vh', overflowY: 'auto', backgroundColor: "#f5faff" }}
+    <Dialog className="max-h-[90vh] overflow-y-auto sm:max-w-2xl"
         open={openDialog}
         onOpenChange={(isOpen) => {
             setOpenDialog(isOpen)
             if (!isOpen) {
-                setFormData(initialFormData) // 👈 Reset form
-                // setValue1("") // optional: reset date text input
-                // setValue2("")
-                // setDate1(undefined)
-                // setDate2(undefined)
+                setFormData(initialFormData)
             }
         }}>
       <DialogTrigger asChild>
@@ -246,533 +319,123 @@ const [openDialog, setOpenDialog] = React.useState(false)
           cursor: 'pointer',
         }}>Add New Client</Button>
       </DialogTrigger>
-      <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-2xl">
-        <DialogHeader className={undefined}>
-          <DialogTitle className={undefined}>Add New Client</DialogTitle>
-          <DialogDescription className={undefined}>Fill in the client information below.</DialogDescription>
+      <DialogContent className="w-[900px] bg-gray-200 rounded-lg p-6 space-y-4 text-center flex flex-col items-center max-h-[90vh] overflow-y-auto">
+        <DialogHeader className="">
+            <DialogTitle className="text-center text-2xl font-bold">Add New Client</DialogTitle>
         </DialogHeader>
-        <form onSubmit={handleSubmit}>
-          <div className="grid gap-4">
-            <div className="grid gap-2">
-              <Label htmlFor="first_name" className={undefined}>First Name</Label>
-              <Input
-                              id="first_name"
-                              name="first_name"
-                              value={formData.first_name}
-                              onChange={handleChange} className={undefined} type={undefined}              />
+
+        <form onSubmit={handleSubmit} className="space-y-6">
+            {/* First row */}
+            <div className="grid grid-cols-3 gap-4">
+            <InputWithLabel id="first_name" label="First Name" value={formData.first_name} onChange={handleChange} />
+            <InputWithLabel id="last_name" label="Last Name" value={formData.last_name} onChange={handleChange} />
+            <SelectWithLabel id="status" label="Status" value={formData.status} onChange={handleChange} options={["Active Prospect", "Customer", "New Contact", "Prospect"]} />
             </div>
-            <div className="grid gap-2">
-              <Label htmlFor="last_name" className={undefined}>Last Name</Label>
-              <Input
-                              id="last_name"
-                              name="last_name"
-                              value={formData.last_name}
-                              onChange={handleChange} className={undefined} type={undefined}              />
+
+            {/* Second row */}
+            <div className="grid grid-cols-3 gap-4">
+            <InputWithLabel id="home_phone" label="Home Phone" value={formData.home_phone} onChange={handleChange} />
+            <InputWithLabel id="mobile_phone" label="Mobile Phone" value={formData.mobile_phone} onChange={handleChange} />
+            <InputWithLabel id="email" label="Email" value={formData.email} onChange={handleChange} type="email" />
             </div>
-            <div className="grid gap-2">
-              <Label htmlFor="co_borrower" className={undefined}>Co Borrower Name</Label>
-              <Input
-                              id="co_borrower"
-                              name="co_borrower"
-                              value={formData.co_borrower}
-                              onChange={handleChange} className={undefined} type={undefined}              />
+
+            {/* Address row */}
+            <div className="grid grid-cols-2 gap-4">
+            <InputWithLabel id="address" label="Address" value={formData.address} onChange={handleChange} />
+            <InputWithLabel id="city" label="City" value={formData.city} onChange={handleChange} />
             </div>
-            <div className="grid gap-2">
-              <Label htmlFor="email" className={undefined}>Email</Label>
-              <Input
-                              id="email"
-                              name="email"
-                              type="email"
-                              value={formData.email}
-                              onChange={handleChange} className={undefined}              />
+
+            {/* State and zip */}
+            <div className="grid grid-cols-2 gap-4">
+            <SelectWithLabel id="state" label="State" value={formData.state} onChange={handleChange} options={usStates.map(s => s.label)} />
+            <InputWithLabel id="zipcode" label="Zipcode" value={formData.zipcode} onChange={handleChange} />
             </div>
-            <div className="grid gap-2">
-              <Label htmlFor="status" className={undefined}>Status</Label>
-              <select
-                id="status"
-                name="status"
-                value={formData.status}
-                onChange={handleChange}
-                className="rounded-md border px-3 py-2"
-              >
-                <option value="Active Prospect">Active Prospect</option>
-                <option value="Customer">Customer</option>
-                <option value="New Contact">New Contact</option>
-                <option value="Prospect">Prospect</option>
-              </select>
+
+            {/* Spouse, children, co-borrower */}
+            <div className="grid grid-cols-3 gap-4">
+            <InputWithLabel id="spouse" label="Spouse" value={formData.spouse} onChange={handleChange} />
+            <InputWithLabel id="children" label="Children" value={formData.children} onChange={handleChange} />
+            <InputWithLabel id="co_borrower" label="Co-Borrower" value={formData.co_borrower} onChange={handleChange} />
             </div>
-            <div className="grid gap-2">
-              <Label htmlFor="address" className={undefined}>Address</Label>
-              <Input
-                              id="address"
-                              name="address"
-                              value={formData.address}
-                              onChange={handleChange} className={undefined} type={undefined}              />
+
+            {/* Amounts, contract date, rate */}
+            <div className="grid grid-cols-4 gap-4">
+            <InputWithLabel id="current_amount" label="Current Amount" value={formData.current_amount} onChange={handleChange} />
+            <InputWithLabel id="prospect_amount" label="Prospect Amount" value={formData.prospect_amount} onChange={handleChange} />
+            <DatePickerInput id="date_of_contract" label="Date of Contract" value={value1} onChange={setValue1} date={date1} setDate={setDate1} />
+            <InputWithLabel id="rate" label="Rate" value={formData.rate} onChange={handleChange} />
             </div>
-            <div className="grid gap-2">
-              <Label htmlFor="city" className={undefined}>City</Label>
-              <Input
-                              id="city"
-                              name="city"
-                              value={formData.city}
-                              onChange={handleChange} className={undefined} type={undefined}              />
+
+            {/* Loan type row */}
+            <div className="grid grid-cols-4 gap-4">
+            <InputWithLabel id="loan_type" label="Loan Type" value={formData.loan_type} onChange={handleChange} />
+            <InputWithLabel id="sale_price" label="Sale Price" value={formData.sale_price} onChange={handleChange} />
+            <InputWithLabel id="subject_price" label="Subject Price" value={formData.subject_price} onChange={handleChange} />
+            <InputWithLabel id="subject_loan" label="Subject Loan" value={formData.subject_loan} onChange={handleChange} />
             </div>
-            <div className="grid gap-2">
-              <Label htmlFor="state" className={undefined}>State</Label>
-              <select
-                id="state"
-                name="state"
-                value={formData.state}
-                onChange={handleChange}
-                className="rounded-md border px-3 py-2"
-              >
-                <option value="AL">AL</option>
-                <option value="AK">AK</option>
-                <option value="AZ">AZ</option>
-                <option value="AR">AR</option>
-                <option value="CA">CA</option>
-                <option value="CO">CO</option>
-                <option value="CT">CT</option>
-                <option value="DC">DC</option>
-                <option value="DE">DE</option>
-                <option value="FL">FL</option>
-                <option value="GA">GA</option>
-                <option value="HI">HI</option>
-                <option value="ID">ID</option>
-                <option value="IL">IL</option>
-                <option value="IN">IN</option>
-                <option value="IA">IA</option>
-                <option value="KS">KS</option>
-                <option value="KY">KY</option>
-                <option value="LA">LA</option>
-                <option value="ME">ME</option>
-                <option value="MD">MD</option>
-                <option value="MA">MA</option>
-                <option value="MI">MI</option>
-                <option value="MN">MN</option>
-                <option value="MS">MS</option>
-                <option value="MO">MO</option>
-                <option value="MT">MT</option>
-                <option value="NE">NE</option>
-                <option value="NV">NV</option>
-                <option value="NH">NH</option>
-                <option value="NJ">NJ</option>
-                <option value="NM">NM</option>
-                <option value="NY">NY</option>
-                <option value="NC">NC</option>
-                <option value="ND">ND</option>
-                <option value="OH">OH</option>
-                <option value="OK">OK</option>
-                <option value="OR">OR</option>
-                <option value="PA">PA</option>
-                <option value="RI">RI</option>
-                <option value="SC">SC</option>
-                <option value="SD">SD</option>
-                <option value="TN">TN</option>
-                <option value="TX">TX</option>
-                <option value="UT">UT</option>
-                <option value="VT">VT</option>
-                <option value="VA">VA</option>
-                <option value="WA">WA</option>
-                <option value="WV">WV</option>
-                <option value="WI">WI</option>
-                <option value="WY">WY</option>
-              </select>
+
+            {/* Property info row */}
+            <div className="grid grid-cols-4 gap-4">
+            <SelectWithLabel id="property_order" label="Property Order" value={formData.property_order} onChange={handleChange} options={["1", "2", "3", "4", "5"]} />
+            <SelectWithLabel id="old_contact" label="Old Contact?" value={formData.old_contact} onChange={handleChange} options={["Yes", "No"]} />
+            <DatePickerInput id="last_contact" label="Last Contact" value={value2} onChange={setValue2} date={date2} setDate={setDate2} />
+            <InputWithLabel id="client_source" label="Client Source" value={formData.client_source} onChange={handleChange} />
             </div>
-            <div className="grid gap-2">
-              <Label htmlFor="zipcode" className={undefined}>Zipcode</Label>
-              <Input
-                              id="zipcode"
-                              name="zipcode"
-                              value={formData.zipcode}
-                              onChange={handleChange} className={undefined} type={undefined}              />
+
+            {/* Company and job */}
+            <div className="grid grid-cols-2 gap-4">
+            <InputWithLabel id="company" label="Company" value={formData.company} onChange={handleChange} />
+            <InputWithLabel id="job_title" label="Job Title" value={formData.job_title} onChange={handleChange} />
             </div>
-            <div className="grid gap-2">
-              <Label htmlFor="old_contact" className={undefined}>Old Contact?</Label>
-              <select
-                id="old_contact"
-                name="old_contact"
-                value={formData.old_contact}
-                onChange={handleChange}
-                className="rounded-md border px-3 py-2"
-              >
-                <option value="Yes">Yes</option>
-                <option value="No">No</option>
-              </select>
+
+            {/* Email and phone */}
+            <div className="grid grid-cols-2 gap-4">
+            <InputWithLabel id="business_email" label="Business Email" value={formData.business_email} onChange={handleChange} />
+            <InputWithLabel id="business_phone" label="Business Phone" value={formData.business_phone} onChange={handleChange} />
             </div>
-            <div className="grid gap-2">
-              <Label htmlFor="home_phone" className={undefined}>Home Phone</Label>
-              <Input
-                              id="home_phone"
-                              name="home_phone"
-                              value={formData.home_phone}
-                              onChange={handleChange} className={undefined} type={undefined}              />
+
+            {/* Business address and city */}
+            <div className="grid grid-cols-2 gap-4">
+            <InputWithLabel id="business_address" label="Business Address" value={formData.business_address} onChange={handleChange} />
+            <InputWithLabel id="business_city" label="Business City" value={formData.business_city} onChange={handleChange} />
             </div>
-            <div className="grid gap-2">
-              <Label htmlFor="mobile_phone" className={undefined}>Mobile Phone</Label>
-              <Input
-                              id="mobile_phone"
-                              name="mobile_phone"
-                              value={formData.mobile_phone}
-                              onChange={handleChange} className={undefined} type={undefined}              />
+
+            {/* Business state/zip/po */}
+            <div className="grid grid-cols-3 gap-4">
+            <SelectWithLabel id="business_state" label="Business State" value={formData.state} onChange={handleChange} options={usStates.map(s => s.label)} />
+            <InputWithLabel id="business_zip" label="Business Zipcode" value={formData.business_zip} onChange={handleChange} />
+            <InputWithLabel id="business_address_po" label="Business PO Box" value={formData.business_address_po} onChange={handleChange} />
             </div>
-            <div className="grid gap-2">
-              <Label htmlFor="property_order" className={undefined}>Property Order</Label>
-              <select
-                id="property_order"
-                name="property_order"
-                value={formData.property_order}
-                onChange={handleChange}
-                className="rounded-md border px-3 py-2"
-              >
-                <option value='1'>1</option>
-                <option value="2">2</option>
-                <option value="3">3</option>
-                <option value="4">4</option>
-                <option value="5">5</option>
-              </select>
+
+            {/* SM link */}
+            <div className="grid grid-cols-1">
+            <InputWithLabel id="sm_link" label="SM Link" value={formData.sm_link} onChange={handleChange} />
             </div>
-            <div className="grid gap-2">
-              <Label htmlFor="spouse" className={undefined}>Spouse</Label>
-              <Input
-                              id="spouse"
-                              name="spouse"
-                              value={formData.spouse}
-                              onChange={handleChange} className={undefined} type={undefined}              />
-            </div>
-            <div className="grid gap-2">
-              <Label htmlFor="children" className={undefined}>Children</Label>
-              <Input
-                              id="children"
-                              name="children"
-                              value={formData.children}
-                              onChange={handleChange} className={undefined} type={undefined}              />
-            </div>
-            <div className="grid gap-2">
-              <Label htmlFor="current_amount" className={undefined}>Current Amount</Label>
-              <Input
-                              id="current_amount"
-                              name="current_amount"
-                              value={formData.current_amount}
-                              onChange={handleChange} className={undefined} type={undefined}              />
-            </div>
-            <div className="grid gap-2">
-              <Label htmlFor="prospect_amount" className={undefined}>Prospect Amount</Label>
-              <Input
-                              id="prospect_amount"
-                              name="prospect_amount"
-                              value={formData.prospect_amount}
-                              onChange={handleChange} className={undefined} type={undefined}              />
-            </div>
-            <div className="grid gap-2">
-              <Label htmlFor="rate" className={undefined}>Rate</Label>
-              <Input
-                              id="rate"
-                              name="rate"
-                              value={formData.rate}
-                              onChange={handleChange} className={undefined} type={undefined}              />
-            </div>
-            <div className="grid gap-2">
-              <Label htmlFor="date_of_contract" className={undefined}>Date Of Contract</Label>
-              <div className="flex flex-col gap-3">
-                    <Input
-                                  id="date_of_contract"
-                                  value={value1}
-                                  placeholder="June 01, 2025"
-                                  className="bg-background pr-10"
-                                  onChange={(e) => {
-                                      const date = new Date(e.target.value)
-                                      setValue1(e.target.value)
-                                      if (isValidDate(date)) {
-                                          setDate1(date)
-                                          setMonth1(date)
-                                      }
-                                  } }
-                                  onKeyDown={(e) => {
-                                      if (e.key === "ArrowDown") {
-                                          e.preventDefault()
-                                          setOpen1(true)
-                                      }
-                                  } } type={undefined}                    />
-                    <Popover open={open1} onOpenChange={setOpen1}>
-                    <PopoverTrigger asChild>
-                        <Button
-                        id="date-picker"
-                        variant="ghost"
-                        className="absolute top-1/2 right-2 size-6 -translate-y-1/2"
-                        >
-                        <CalendarIcon className="size-3.5" />
-                        <span className="sr-only">Select date</span>
-                        </Button>
-                    </PopoverTrigger>
-                    <PopoverContent
-                        className="w-auto overflow-hidden p-0"
-                        align="end"
-                        alignOffset={-8}
-                        sideOffset={10}
-                    >
-                        <Calendar
-                        mode="single"
-                        selected={date1}
-                        captionLayout="dropdown"
-                        month={month1}
-                        onMonthChange={setMonth1}
-                        onSelect={(date) => {
-                            setDate1(date)
-                            setValue1(formatDate(date))
-                            setOpen1(false)
-                        }}
-                        />
-                    </PopoverContent>
-                    </Popover>
+
+            {/* Notes */}
+            <div className="flex flex-col">
+                <label htmlFor="notes" className="text-sm font-medium text-gray-700">Notes</label>
+                <textarea
+                    id="notes"
+                    name="notes"
+                    rows={4}
+                    value={notesText}
+                    onChange={(e) => setNotesText(e.target.value)}
+                    className="rounded-md border border-gray-400 p-2 resize-vertical"
+                    placeholder="Enter notes here..."
+                />
                 </div>
-            </div>
-            <div className="grid gap-2">
-              <Label htmlFor="last_contact" className={undefined}>Last Contact</Label>
-              <div className="flex flex-col gap-3">
-                    <Input
-                                  id="last_contact"
-                                  value={value2}
-                                  placeholder="June 01, 2025"
-                                  className="bg-background pr-10"
-                                  onChange={(e) => {
-                                      const date = new Date(e.target.value)
-                                      setValue2(e.target.value)
-                                      if (isValidDate(date)) {
-                                          setDate2(date)
-                                          setMonth2(date)
-                                      }
-                                  } }
-                                  onKeyDown={(e) => {
-                                      if (e.key === "ArrowDown") {
-                                          e.preventDefault()
-                                          setOpen2(true)
-                                      }
-                                  } } type={undefined}                    />
-                    <Popover open={open2} onOpenChange={setOpen2}>
-                    <PopoverTrigger asChild>
-                        <Button
-                        id="date-picker"
-                        variant="ghost"
-                        className="absolute top-1/2 right-2 size-6 -translate-y-1/2"
-                        >
-                        <CalendarIcon className="size-3.5" />
-                        <span className="sr-only">Select date</span>
-                        </Button>
-                    </PopoverTrigger>
-                    <PopoverContent
-                        className="w-auto overflow-hidden p-0"
-                        align="end"
-                        alignOffset={-8}
-                        sideOffset={10}
-                    >
-                        <Calendar
-                        mode="single"
-                        selected={date2}
-                        captionLayout="dropdown"
-                        month={month2}
-                        onMonthChange={setMonth2}
-                        onSelect={(date) => {
-                            setDate2(date)
-                            setValue2(formatDate(date))
-                            setOpen2(false)
-                        }}
-                        />
-                    </PopoverContent>
-                    </Popover>
-                </div>
-            </div>
-            <div className="grid gap-2">
-              <Label htmlFor="loan_type" className={undefined}>Loan Type</Label>
-              <Input
-                              id="loan_type"
-                              name="loan_type"
-                              value={formData.loan_type}
-                              onChange={handleChange} className={undefined} type={undefined}              />
-            </div>
-            <div className="grid gap-2">
-              <Label htmlFor="sale_price" className={undefined}>Sale Price</Label>
-              <Input
-                              id="sale_price"
-                              name="sale_price"
-                              value={formData.sale_price}
-                              onChange={handleChange} className={undefined} type={undefined}              />
-            </div>
-            <div className="grid gap-2">
-              <Label htmlFor="subject_price" className={undefined}>Subject Price</Label>
-              <Input
-                              id="subject_price"
-                              name="subject_price"
-                              value={formData.subject_price}
-                              onChange={handleChange} className={undefined} type={undefined}              />
-            </div>
-            <div className="grid gap-2">
-              <Label htmlFor="subject_loan" className={undefined}>Subject Loan</Label>
-              <Input
-                              id="subject_loan"
-                              name="subject_Loan"
-                              value={formData.subject_loan}
-                              onChange={handleChange} className={undefined} type={undefined}              />
-            </div>
-            <div className="grid gap-2">
-              <Label htmlFor="client_source" className={undefined}>Client Source</Label>
-              <Input
-                              id="client_source"
-                              name="client_source"
-                              value={formData.client_source}
-                              onChange={handleChange} className={undefined} type={undefined}              />
-            </div>
-            <div className="grid gap-2">
-              <Label htmlFor="business_phone" className={undefined}>Business Phone</Label>
-              <Input
-                              id="business_phone"
-                              name="business_phone"
-                              value={formData.business_phone}
-                              onChange={handleChange} className={undefined} type={undefined}              />
-            </div>
-            <div className="grid gap-2">
-              <Label htmlFor="business_email" className={undefined}>Business Email</Label>
-              <Input
-                              id="business_email"
-                              name="business_email"
-                              value={formData.business_email}
-                              onChange={handleChange} className={undefined} type={undefined}              />
-            </div>
-            <div className="grid gap-2">
-              <Label htmlFor="company" className={undefined}>Company</Label>
-              <Input
-                              id="company"
-                              name="company"
-                              value={formData.company}
-                              onChange={handleChange} className={undefined} type={undefined}              />
-            </div>
-            <div className="grid gap-2">
-              <Label htmlFor="job_title" className={undefined}>Job Title</Label>
-              <Input
-                              id="job_title"
-                              name="job_title"
-                              value={formData.job_title}
-                              onChange={handleChange} className={undefined} type={undefined}              />
-            </div>
-            <div className="grid gap-2">
-              <Label htmlFor="business_address" className={undefined}>Business Address</Label>
-              <Input
-                              id="business_address"
-                              name="business_address"
-                              value={formData.business_address}
-                              onChange={handleChange} className={undefined} type={undefined}              />
-            </div>
-            <div className="grid gap-2">
-              <Label htmlFor="business_address_po" className={undefined}>Business Address PO</Label>
-              <Input
-                              id="business_address_po"
-                              name="business_address_po"
-                              value={formData.business_address_po}
-                              onChange={handleChange} className={undefined} type={undefined}              />
-            </div>
-            <div className="grid gap-2">
-              <Label htmlFor="business_city" className={undefined}>Business City</Label>
-              <Input
-                              id="business_city"
-                              name="business_city"
-                              value={formData.business_city}
-                              onChange={handleChange} className={undefined} type={undefined}              />
-            </div>
-            <div className="grid gap-2">
-              <Label htmlFor="business_state" className={undefined}>Business State</Label>
-              <select
-                id="business_state"
-                name="business_state"
-                value={formData.business_state}
-                onChange={handleChange}
-                className="rounded-md border px-3 py-2"
-              >
-                <option value="AL">AL</option>
-                <option value="AK">AK</option>
-                <option value="AZ">AZ</option>
-                <option value="AR">AR</option>
-                <option value="CA">CA</option>
-                <option value="CO">CO</option>
-                <option value="CT">CT</option>
-                <option value="DC">DC</option>
-                <option value="DE">DE</option>
-                <option value="FL">FL</option>
-                <option value="GA">GA</option>
-                <option value="HI">HI</option>
-                <option value="ID">ID</option>
-                <option value="IL">IL</option>
-                <option value="IN">IN</option>
-                <option value="IA">IA</option>
-                <option value="KS">KS</option>
-                <option value="KY">KY</option>
-                <option value="LA">LA</option>
-                <option value="ME">ME</option>
-                <option value="MD">MD</option>
-                <option value="MA">MA</option>
-                <option value="MI">MI</option>
-                <option value="MN">MN</option>
-                <option value="MS">MS</option>
-                <option value="MO">MO</option>
-                <option value="MT">MT</option>
-                <option value="NE">NE</option>
-                <option value="NV">NV</option>
-                <option value="NH">NH</option>
-                <option value="NJ">NJ</option>
-                <option value="NM">NM</option>
-                <option value="NY">NY</option>
-                <option value="NC">NC</option>
-                <option value="ND">ND</option>
-                <option value="OH">OH</option>
-                <option value="OK">OK</option>
-                <option value="OR">OR</option>
-                <option value="PA">PA</option>
-                <option value="RI">RI</option>
-                <option value="SC">SC</option>
-                <option value="SD">SD</option>
-                <option value="TN">TN</option>
-                <option value="TX">TX</option>
-                <option value="UT">UT</option>
-                <option value="VT">VT</option>
-                <option value="VA">VA</option>
-                <option value="WA">WA</option>
-                <option value="WV">WV</option>
-                <option value="WI">WI</option>
-                <option value="WY">WY</option>
-              </select>
-            </div>
-            <div className="grid gap-2">
-              <Label htmlFor="business_zip" className={undefined}>Business Zipcode</Label>
-              <Input
-                              id="business_zip"
-                              name="business_zip"
-                              value={formData.business_zip}
-                              onChange={handleChange} className={undefined} type={undefined}              />
-            </div>
-            <div className="grid gap-2">
-              <Label htmlFor="sm_link" className={undefined}>SM Link</Label>
-              <Input
-                              id="sm_link"
-                              name="sm_link"
-                              value={formData.sm_link}
-                              onChange={handleChange} className={undefined} type={undefined}              />
-            </div>
-            {/* <div className="grid gap-2">
-              <Label htmlFor="notes" className={undefined}>Notes</Label>
-              <Input
-                              id="notes"
-                              name="notes"
-                              value={formData.notes}
-                              onChange={handleChange} className={undefined} type={undefined}              />
-            </div> */}
-          </div>
-          <DialogFooter className={undefined}>
+
+            {/* Buttons */}
+            <div className="flex justify-center gap-4 mt-4">
+
             <DialogClose asChild>
-              <Button variant="outline" type="button">Cancel</Button>
+                <Button type="button" variant="secondary">Cancel</Button>
             </DialogClose>
             <Button type="submit">Save</Button>
-          </DialogFooter>
+            </div>
         </form>
-      </DialogContent>
+        </DialogContent>
     </Dialog>
   )
 }
