@@ -3,7 +3,7 @@ import { supabase } from "./supabase"
 import { useEffect, useState } from "react"
 import { useParams, useNavigate } from "react-router-dom"
 import { usStates, oldContactOptions, propertyOrderOptions, statusOptions } from "./selectOptions"
-import { formatDate, DatePickerInput, InputWithLabel, SelectWithLabel } from "./CustomComponents"
+import { DatePickerInput, InputWithLabel, SelectWithLabel } from "./CustomComponents"
 import { Button } from "./components/ui/button"
 
 export default function ClientDetailPage() {
@@ -15,11 +15,8 @@ export default function ClientDetailPage() {
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  // For date pickers
   const [dateOfContract, setDateOfContract] = useState<Date | null>(null)
   const [lastContact, setLastContact] = useState<Date | null>(null)
-
-  // Notes textarea state
   const [notesText, setNotesText] = useState("")
 
   useEffect(() => {
@@ -40,18 +37,15 @@ export default function ClientDetailPage() {
         const clientData = data[0]
         setClient(clientData)
 
-        // Initialize date states from client data if exists
         setDateOfContract(clientData.date_of_contract ? new Date(clientData.date_of_contract) : null)
         setLastContact(clientData.last_contact ? new Date(clientData.last_contact) : null)
 
-        // Initialize notes (array to string)
         setNotesText(Array.isArray(clientData.notes) ? clientData.notes.join("\n") : "")
       }
       setLoading(false)
     }
 
     fetchClient()
-    // console.log(client.state)
   }, [id, user])
 
   const handleChange = (field: keyof typeof client, value: any) => {

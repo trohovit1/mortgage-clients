@@ -10,8 +10,6 @@ import { supabase } from './supabase'
 import { FaTrash } from 'react-icons/fa';
 import { Dialog } from '@radix-ui/react-dialog'
 import { DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from './components/ui/dialog'
-import { Label } from './components/ui/label'
-import { Input } from './components/ui/input'
 
 
 function Dashboard() {
@@ -53,9 +51,6 @@ useEffect(() => {
 
     // Apply sorting
     query = query.order('date_of_contract', { ascending: sortDirection === 'asc' });
-
-    // Optionally limit results if you want, or remove limit if you want all
-    // query = query.limit(2000);
 
     const { data, error } = await query;
 
@@ -197,36 +192,6 @@ const handleDelete = async () => {
                     <FaTrash size={20} color="red" />
                   </Button>
                 </td>
-                {/* <td onClick={(e) => e.stopPropagation()}>
-                  <Dialog open={deleteOpen} onOpenChange={setDeleteOpen}>
-                    <DialogTrigger asChild>
-                      <Button
-                        variant="ghost"
-                        onClick={() => {
-                          setClientToDelete(client);
-                        }}
-                      >
-                        <FaTrash size={20} color="red" />
-                      </Button>
-                    </DialogTrigger>
-                    <DialogContent className="sm:max-w-md dialog-bg-lightblue">
-                      <DialogHeader className={undefined}>
-                        <DialogTitle className={undefined}>Are you sure you want to delete this client?</DialogTitle>
-                        <DialogDescription className={undefined}>This action cannot be undone.</DialogDescription>
-                      </DialogHeader>
-                      <DialogFooter className="sm:justify-start">
-                        <DialogClose asChild>
-                          <Button type="button" variant="destructive" onClick={handleDelete}>
-                            Delete
-                          </Button>
-                        </DialogClose>
-                        <DialogClose asChild>
-                          <Button type="button" variant="secondary">Cancel</Button>
-                        </DialogClose>
-                      </DialogFooter>
-                    </DialogContent>
-                  </Dialog> */}
-                {/* </td> */}
                 <td>{client.status}</td>
                 <td>{client.first_name}</td>
                 <td>{client.last_name}</td>

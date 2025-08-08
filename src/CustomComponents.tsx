@@ -1,4 +1,4 @@
-import React, { useState } from "react"
+import React from "react"
 import { Button } from "./components/ui/button"
 import { Input } from "./components/ui/input"
 import { CalendarIcon } from "lucide-react"
@@ -63,7 +63,7 @@ export function DatePickerInput({ id, label, value, onChange, date, setDate }) {
                   setMonth(newDate)
                 }
               }}
-              onFocus={() => setOpen(true)}  // open on focus
+              onFocus={() => setOpen(true)}
               className="pr-10"
               type={undefined}
             />

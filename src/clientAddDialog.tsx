@@ -6,7 +6,7 @@ import {
   DialogHeader,
   DialogTitle,
   DialogClose,
-} from "./components/ui/dialog"  // Adjust path to your Dialog components
+} from "./components/ui/dialog"
 import { Button } from "./components/ui/button"
 import { useUser } from "@clerk/clerk-react"
 import { supabase } from './supabase'
@@ -95,15 +95,11 @@ const initialFormData: ClientFormData = {
 
 
 export function ClientFormDialog() {
-    const { user } = useUser()
+  const { user } = useUser()
   const [formData, setFormData] = useState<ClientFormData>(initialFormData)
-  const [open1, setOpen1] = React.useState(false)
   const [date1, setDate1] = React.useState<Date | undefined>()
-  const [month1, setMonth1] = React.useState<Date | undefined>(date1)
   const [value1, setValue1] = React.useState(formatDate(date1))
-  const [open2, setOpen2] = React.useState(false)
   const [date2, setDate2] = React.useState<Date | undefined>()
-  const [month2, setMonth2] = React.useState<Date | undefined>(date1)
   const [value2, setValue2] = React.useState(formatDate(date1))
 
   const [notesText, setNotesText] = React.useState("")
@@ -116,14 +112,13 @@ export function ClientFormDialog() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    // TODO: handle submit logic here, e.g., API call or state update
     if (!user?.primaryEmailAddress?.emailAddress) return
 
     const email = user.primaryEmailAddress.emailAddress
 
     const { data: existingClients, error: fetchError } = await supabase
         .from("clients")
-        .select("id")  // Just need the id to check existence
+        .select("id")
         .eq("first_name", formData.first_name)
         .eq("last_name", formData.last_name)
         .is('deleted', null)
@@ -185,7 +180,7 @@ export function ClientFormDialog() {
         setFormData(initialFormData);
     } else {
         alert("Client saved successfully!")
-        setFormData(initialFormData) // reset form
+        setFormData(initialFormData)
         setOpenDialog(false)
     }
 
