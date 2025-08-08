@@ -22,7 +22,7 @@ export function InputWithLabel({ id, label, value, onChange, type = "text" }) {
 
 export function SelectWithLabel({ id, label, value, onChange, options }) {
   return (
-    <label htmlFor={id} className="block">
+    <label htmlFor={id} className="text-sm font-medium text-gray-700">
       {label}
       <select
         id={id}
