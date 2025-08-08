@@ -2,7 +2,7 @@ import { useUser } from "@clerk/clerk-react"
 import { supabase } from "./supabase"
 import { useEffect, useState } from "react"
 import { useParams, useNavigate } from "react-router-dom"
-import { usStates } from "./states"
+import { usStates, oldContactOptions, propertyOrderOptions, statusOptions } from "./selectOptions"
 import { formatDate, DatePickerInput, InputWithLabel, SelectWithLabel } from "./CustomComponents"
 import { Button } from "./components/ui/button"
 
@@ -84,9 +84,15 @@ export default function ClientDetailPage() {
     setSaving(false)
   }
 
-  if (loading) return <div>Loading client data...</div>
-  if (error) return <div>{error}</div>
-  if (!client) return <div>No client found with ID: {id}</div>
+  if (loading) return <div>
+    <h1 className="text-center text-2xl font-bold text-gray-200">Loading client details...</h1>
+  </div>
+  if (error) return <div>
+    <h1 className="text-center text-2xl font-bold text-gray-200">{error}</h1>
+  </div>
+  if (!client) return <div>
+    <h1 className="text-center text-2xl font-bold text-gray-200">No client found with ID: {id}</h1>
+  </div>
 
   return (
     <div className="max-w-4xl mx-auto p-6 bg-gray-100 rounded shadow">
@@ -112,13 +118,7 @@ export default function ClientDetailPage() {
             value={client.last_name ?? ""}
             onChange={(v) => handleChange("last_name", v)}
           />
-          <SelectWithLabel
-            id="state"
-            label="State"
-            value={client.state ?? ""}
-            onChange={v => handleChange("state", v)}
-            options={usStates}
-          />
+          <SelectWithLabel id="status" label="Status" value={client.status} onChange={handleChange} options={statusOptions} />
         </div>
 
         {/* Second row */}
@@ -167,7 +167,7 @@ export default function ClientDetailPage() {
             label="State"
             value={client.state ?? ""}
             onChange={(v) => handleChange("state", v)}
-            options={usStates.map(s => s.label)}
+            options={usStates}
           />
           <InputWithLabel
             id="zipcode"
@@ -264,14 +264,14 @@ export default function ClientDetailPage() {
             label="Property Order"
             value={client.property_order ?? ""}
             onChange={(v) => handleChange("property_order", v)}
-            options={["1", "2", "3", "4", "5"]}
+            options={propertyOrderOptions}
           />
           <SelectWithLabel
             id="old_contact"
             label="Old Contact?"
             value={client.old_contact ?? ""}
             onChange={(v) => handleChange("old_contact", v)}
-            options={["Yes", "No"]}
+            options={oldContactOptions}
           />
           <DatePickerInput
             id="last_contact"
@@ -339,11 +339,12 @@ export default function ClientDetailPage() {
 
         {/* Business state/zip/po */}
         <div className="grid grid-cols-3 gap-4">
-          <InputWithLabel
+          <SelectWithLabel
             id="business_state"
             label="Business State"
             value={client.business_state ?? ""}
             onChange={(v) => handleChange("business_state", v)}
+            options={usStates}
           />
           <InputWithLabel
             id="business_zip"

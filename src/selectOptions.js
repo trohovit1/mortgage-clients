@@ -52,3 +52,25 @@ export const usStates = [
   { value: "WY", label: "Wyoming" },
   { value: "DC", label: "District of Columbia" },
 ];
+
+export const propertyOrderOptions=[
+  { value: "1", label: "1" },
+  { value: "2", label: "2" },
+  { value: "3", label: "3" },
+  { value: "4", label: "4" },
+  { value: "5", label: "5" }
+];
+
+export const oldContactOptions=[
+  { value: "", label: "" },
+  { value: "Yes", label: "Yes" },
+  { value: "No", label: "No" }
+];
+
+export const statusOptions = [
+  { value: "", label: "" },
+  { value: "Active Prospect", label: "Active Prospect" },
+  { value: "Customer", label: "Customer" },
+  { value: "New Contact", label: "New Contact" },
+  { value: "Prospect", label: "Prospect" }
+];

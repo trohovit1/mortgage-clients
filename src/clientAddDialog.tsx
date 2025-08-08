@@ -11,7 +11,7 @@ import { Button } from "./components/ui/button"
 import { useUser } from "@clerk/clerk-react"
 import { supabase } from './supabase'
 import './App.css'
-import { usStates } from "./states"
+import { usStates, oldContactOptions, propertyOrderOptions, statusOptions } from "./selectOptions"
 import { formatDate, DatePickerInput, InputWithLabel, SelectWithLabel } from "./CustomComponents"
 
 
@@ -227,7 +227,7 @@ const [openDialog, setOpenDialog] = React.useState(false)
             <div className="grid grid-cols-3 gap-4">
             <InputWithLabel id="first_name" label="First Name" value={formData.first_name} onChange={handleChange} />
             <InputWithLabel id="last_name" label="Last Name" value={formData.last_name} onChange={handleChange} />
-            <SelectWithLabel id="status" label="Status" value={formData.status} onChange={handleChange} options={["", "Active Prospect", "Customer", "New Contact", "Prospect"]} />
+            <SelectWithLabel id="status" label="Status" value={formData.status} onChange={handleChange} options={statusOptions} />
             </div>
 
             {/* Second row */}
@@ -245,7 +245,7 @@ const [openDialog, setOpenDialog] = React.useState(false)
 
             {/* State and zip */}
             <div className="grid grid-cols-2 gap-4">
-            <SelectWithLabel id="state" label="State" value={formData.state} onChange={handleChange} options={usStates.map(s => s.label)} />
+            <SelectWithLabel id="state" label="State" value={formData.state} onChange={handleChange} options={usStates} />
             <InputWithLabel id="zipcode" label="Zipcode" value={formData.zipcode} onChange={handleChange} />
             </div>
 
@@ -274,8 +274,8 @@ const [openDialog, setOpenDialog] = React.useState(false)
 
             {/* Property info row */}
             <div className="grid grid-cols-4 gap-4">
-            <SelectWithLabel id="property_order" label="Property Order" value={formData.property_order} onChange={handleChange} options={["1", "2", "3", "4", "5"]} />
-            <SelectWithLabel id="old_contact" label="Old Contact?" value={formData.old_contact} onChange={handleChange} options={["Yes", "No"]} />
+            <SelectWithLabel id="property_order" label="Property Order" value={formData.property_order} onChange={handleChange} options={propertyOrderOptions} />
+            <SelectWithLabel id="old_contact" label="Old Contact?" value={formData.old_contact} onChange={handleChange} options={oldContactOptions} />
             <DatePickerInput id="last_contact" label="Last Contact" value={value2} onChange={setValue2} date={date2} setDate={setDate2} />
             <InputWithLabel id="client_source" label="Client Source" value={formData.client_source} onChange={handleChange} />
             </div>
@@ -300,7 +300,7 @@ const [openDialog, setOpenDialog] = React.useState(false)
 
             {/* Business state/zip/po */}
             <div className="grid grid-cols-3 gap-4">
-            <SelectWithLabel id="business_state" label="Business State" value={formData.state} onChange={handleChange} options={usStates.map(s => s.label)} />
+            <SelectWithLabel id="business_state" label="Business State" value={formData.state} onChange={handleChange} options={usStates} />
             <InputWithLabel id="business_zip" label="Business Zipcode" value={formData.business_zip} onChange={handleChange} />
             <InputWithLabel id="business_address_po" label="Business PO Box" value={formData.business_address_po} onChange={handleChange} />
             </div>

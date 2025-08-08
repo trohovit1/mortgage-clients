@@ -28,9 +28,8 @@ export function SelectWithLabel({ id, label, value, onChange, options }) {
         id={id}
         value={value}
         onChange={e => onChange(e.target.value)}
-        className="border rounded p-2 w-full"
+        className="border border-gray-300 rounded p-2 w-full"
       >
-        <option value=""></option>
         {options.map(opt => (
           <option key={opt.value} value={opt.value}>
             {opt.label}

@@ -274,12 +274,12 @@ const handleDelete = async () => {
             </DialogDescription>
             <div className="flex gap-4 pt-4">
               <DialogClose asChild>
-                <Button type="button" variant="secondary">
+                <Button type="button" variant="secondary" className="hover:bg-gray-300">
                   Cancel
                 </Button>
               </DialogClose>
               <DialogClose asChild>
-                <Button type="button" variant="destructive" onClick={handleDelete}>
+                <Button type="button" variant="destructive" onClick={handleDelete} className="hover:bg-red-700">
                   Delete
                 </Button>
               </DialogClose>
