@@ -11,6 +11,28 @@ import { FaTrash } from 'react-icons/fa';
 import { Dialog } from '@radix-ui/react-dialog'
 import { DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from './components/ui/dialog'
 
+function convertToCsv(data) {
+  if (!data || data.length === 0) return '';
+
+  const headers = Object.keys(data[0]).join(',');
+  const rows = data.map(row => Object.values(row).join(','));
+  return `${headers}\n${rows.join('\n')}`;
+}
+
+function downloadCsv(csvString, filename = 'data.csv') {
+  const blob = new Blob([csvString], { type: 'text/csv;charset=utf-8;' });
+  const link = document.createElement('a');
+  if (link.download !== undefined) { // Check for download attribute support
+    const url = URL.createObjectURL(blob);
+    link.setAttribute('href', url);
+    link.setAttribute('download', filename);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url); // Clean up the URL object
+  }
+}
 
 function Dashboard() {
   const { signOut } = useAuth()
@@ -88,6 +110,41 @@ const handleDelete = async () => {
   setDeleteOpen(false);
   setClients(prev => prev.filter(c => c.id !== clientToDelete.id));
 }
+
+  async function fetchData() {
+    const { data:data1, error:error1 } = await supabase
+      .from('clients')
+      .select('*')
+      .eq('owner', user.primaryEmailAddress.emailAddress)
+      .is('deleted', null)
+      .range(0, 1000);
+
+    const { data:data2, error:error2 } = await supabase
+      .from('clients')
+      .select('*')
+      .eq('owner', user.primaryEmailAddress.emailAddress)
+      .is('deleted', null)
+      .range(1001, 2000);
+
+
+    if (error1 || error2) {
+      console.error('Error fetching data:', error1);
+      return null;
+    }
+    return data1 ? data1.concat(data2 || []) : data2;
+  }
+
+  const handleDownload = async () => {
+    const data = await fetchData();
+    if (data) {
+      const dateStr = new Date().toISOString().slice(0, 10);
+      const filteredData = data.map(({ owner, id, deleted, ...rest }) => rest);
+      const csv = convertToCsv(filteredData);
+      const filename = `${dateStr}-mortgagedata.csv`;
+
+      downloadCsv(csv, filename);
+    }
+  };
 
 
   return (
@@ -212,18 +269,15 @@ const handleDelete = async () => {
       </div>
       <Button
         onClick={() => signOut({ redirectUrl: '/mortgage-clients' })}
-        style={{
-          position: 'absolute',
-          top: 20,
-          left: 20,
-          padding: '10px 16px',
-          backgroundColor: 'gray',
-          color: 'white',
-          border: 'none',
-          borderRadius: 4,
-          cursor: 'pointer',
-        }} className={undefined} variant={"outline"} size={undefined}      >
+        className="absolute top-5 left-5 px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-400"
+      >
         Sign Out
+      </Button>
+      <Button
+        onClick={() => handleDownload()}
+          className="absolute top-5 right-[170px] px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-400"
+           size={undefined}      >
+        Download CSV
       </Button>
       <ClientFormDialog />
       {clientToDelete && (

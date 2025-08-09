@@ -200,17 +200,12 @@ const [openDialog, setOpenDialog] = React.useState(false)
             }
         }}>
       <DialogTrigger asChild>
-        <Button variant={"default"} style={{
-          position: 'absolute',
-          top: 20,
-          right: 20,
-          padding: '10px 16px',
-          backgroundColor: 'darkblue',
-          color: 'white',
-          border: 'none',
-          borderRadius: 4,
-          cursor: 'pointer',
-        }}>Add New Client</Button>
+        <Button
+            variant="default"
+            className="absolute top-5 right-5 px-4 py-2 bg-[#192659] text-white rounded hover:bg-[#394473]"
+            >
+            Add New Client
+        </Button>
       </DialogTrigger>
       <DialogContent className="w-[900px] bg-gray-200 rounded-lg p-6 space-y-4 text-center flex flex-col items-center max-h-[90vh] overflow-y-auto">
         <DialogHeader className="">

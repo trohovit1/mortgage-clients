@@ -186,7 +186,6 @@ export default function ClientDetailPage() {
   if (loading) return <div>
     <h1 className="text-center text-2xl font-bold text-gray-200">Loading client details...
       <Button
-            type="button"
             onClick={() => navigate("/mortgage-clients")}
             className="hover:bg-gray-400"
             variant="secondary"
@@ -198,7 +197,6 @@ export default function ClientDetailPage() {
   if (error) return <div>
     <h1 className="text-center text-2xl font-bold text-gray-200">{error}
       <Button
-            type="button"
             onClick={() => navigate("/mortgage-clients")}
             className="hover:bg-gray-400"
             variant="secondary"
@@ -210,7 +208,7 @@ export default function ClientDetailPage() {
   if (!client) return <div>
     <h1 className="text-center text-2xl font-bold text-gray-200">No client found with ID: {id}
       <Button
-            type="button"
+          type="button"
             onClick={() => navigate("/mortgage-clients")}
             className="hover:bg-gray-400"
             variant="secondary"
@@ -242,7 +240,7 @@ export default function ClientDetailPage() {
             label="Last Name"
             value={lastName}
             onChange={(e) => setLastName(e.target.value)} />
-          <SelectWithLabel id="status" label="Status" value={client.status} onChange={handleChange} options={statusOptions} />
+          <SelectWithLabel id="status" label="Status" value={client.status ?? ""} onChange={handleChange} options={statusOptions} />
         </div>
 
         {/* Second row */}
@@ -510,17 +508,16 @@ export default function ClientDetailPage() {
         {/* Buttons */}
         <div className="mt-6 flex justify-center gap-4">
           <Button
-            type="button"
             onClick={() => navigate("/mortgage-clients")}
             className="hover:bg-gray-400"
             variant="secondary"
+            type="button"
           >
             ← Back
           </Button>
           <Button
-            type="submit"
-            disabled={saving}
             className="hover:bg-blue-900"
+            onClick={handleSave}
           >
             {saving ? "Saving..." : "Save Changes"}
           </Button>
