@@ -5,6 +5,9 @@ import { useParams, useNavigate } from "react-router-dom"
 import { usStates, oldContactOptions, propertyOrderOptions, statusOptions } from "./selectOptions"
 import { DatePickerInput, InputWithLabel, SelectWithLabel } from "./CustomComponents"
 import { Button } from "./components/ui/button"
+import { Client } from "./clients"
+import { set } from "date-fns"
+import { Input } from "./components/ui/input"
 
 export default function ClientDetailPage() {
   const { id } = useParams<{ id: string }>()
@@ -18,6 +21,41 @@ export default function ClientDetailPage() {
   const [dateOfContract, setDateOfContract] = useState<Date | null>(null)
   const [lastContact, setLastContact] = useState<Date | null>(null)
   const [notesText, setNotesText] = useState("")
+
+  const [address, setAddress] = useState("")
+  const [city, setCity] = useState("")
+  const [state, setState] = useState("")
+  const [zipcode, setZipcode] = useState("")
+  const [homePhone, setHomePhone] = useState("")
+  const [businessPhone, setBusinessPhone] = useState("")
+  const [businessEmail, setBusinessEmail] = useState("")
+  const [businessAddress, setBusinessAddress] = useState("")
+  const [businessAddressPO, setBusinessAddressPO] = useState("")
+  const [businessCity, setBusinessCity] = useState("")
+  const [businessState, setBusinessState] = useState("")
+  const [businessZip, setBusinessZip] = useState("")
+  const [smLink, setSmLink] = useState("")
+  const [company, setCompany] = useState("")
+  const [jobTitle, setJobTitle] = useState("")
+  const [status, setStatus] = useState<Client['status']>("")
+  const [children, setChildren] = useState("")
+  const [coBorrower, setCoBorrower] = useState("")
+  const [oldContact, setOldContact] = useState("")
+  const [email, setEmail] = useState("")
+  const [mobilePhone, setMobilePhone] = useState("")
+  const [propertyOrder, setPropertyOrder] = useState("")
+  const [salePrice, setSalePrice] = useState("")
+  const [subjectPrice, setSubjectPrice] = useState("")
+  const [subjectLoan, setSubjectLoan] = useState("")
+  const [loanType, setLoanType] = useState("")
+  const [rate, setRate] = useState("")
+  const [firstName, setFirstName] = useState("")
+  const [lastName, setLastName] = useState("")
+  const [spouse, setSpouse] = useState("")
+  const [clientSource, setClientSource] = useState("")
+  const [currentAmount, setCurrentAmount] = useState("")
+  const [prospectAmount, setProspectAmount] = useState("")
+
 
   useEffect(() => {
     if (!id || !user?.primaryEmailAddress?.emailAddress) return
@@ -36,6 +74,38 @@ export default function ClientDetailPage() {
       } else if (data && data.length > 0) {
         const clientData = data[0]
         setClient(clientData)
+        
+        setFirstName(clientData.first_name)
+        setLastName(clientData.last_name)
+        setSpouse(clientData.spouse)
+        setStatus(clientData.status)
+        setCurrentAmount(clientData.current_amount || 0)
+        setProspectAmount(clientData.prospect_amount || 0)
+        setRate(clientData.rate || 0)
+        setLoanType(clientData.loan_type)
+        setSalePrice(clientData.sale_price || 0)
+        setSubjectPrice(clientData.subject_price || 0)
+        setSubjectLoan(clientData.subject_loan || 0)
+        setPropertyOrder(clientData.property_order || 1)
+        setOldContact(clientData.old_contact)
+        setClientSource(clientData.client_source)
+        setAddress(clientData.address)
+        setCity(clientData.city)
+        setState(clientData.state)
+        setZipcode(clientData.zipcode)
+        setHomePhone(clientData.home_phone)
+        setMobilePhone(clientData.mobile_phone)
+        setEmail(clientData.email)
+        setBusinessPhone(clientData.business_phone)
+        setBusinessEmail(clientData.business_email)
+        setCompany(clientData.company)
+        setJobTitle(clientData.job_title)
+        setBusinessAddress(clientData.business_address)
+        setBusinessAddressPO(clientData.business_address_po)
+        setBusinessCity(clientData.business_city)
+        setBusinessState(clientData.business_state)
+        setBusinessZip(clientData.business_zip)
+        setSmLink(clientData.sm_link)
 
         setDateOfContract(clientData.date_of_contract ? new Date(clientData.date_of_contract) : null)
         setLastContact(clientData.last_contact ? new Date(clientData.last_contact) : null)
@@ -45,21 +115,56 @@ export default function ClientDetailPage() {
       setLoading(false)
     }
 
-    fetchClient()
+    fetchClient();
+
   }, [id, user])
 
-  const handleChange = (field: keyof typeof client, value: any) => {
+  const handleChange = (field: keyof Client, value: any) => {
     setClient(prev => prev ? { ...prev, [field]: value } : prev)
   }
+
 
   const handleSave = async () => {
     if (!client) return
     setSaving(true)
 
     const updatedClient = {
-      ...client,
-      date_of_contract: dateOfContract ? dateOfContract.toISOString() : null,
-      last_contact: lastContact ? lastContact.toISOString() : null,
+      address: address || null,
+      city: city || null,
+      state: state || null,
+      zipcode: zipcode || null,
+      home_phone: homePhone || null,
+      mobile_phone: mobilePhone || null,
+      email: email || null,
+      business_phone: businessPhone || null,
+      business_email: businessEmail || null,
+      business_address: businessAddress || null,
+      business_address_po: businessAddressPO || null,
+      business_city: businessCity || null,
+      business_state: businessState || null,
+      business_zip: businessZip || null,
+      sm_link: smLink || null,
+      company: company || null,
+      job_title: jobTitle || null,
+      first_name: firstName || null,
+      last_name: lastName || null,
+      spouse: spouse || null,
+      status: status || null,
+      children: children || null,
+      co_borrower: coBorrower || null,
+      current_amount: currentAmount ? parseInt(currentAmount) : null,
+      prospect_amount: prospectAmount ? parseInt(prospectAmount) : null,
+      rate: rate ? parseFloat(rate) : null,
+      loan_type: loanType || null,
+      sale_price: salePrice ? parseInt(salePrice) : null,
+      subject_price: subjectPrice ? parseInt(subjectPrice) : null,
+      subject_loan: subjectLoan ? parseInt(subjectLoan) : null,
+      property_order: propertyOrder ? parseInt(propertyOrder): null,
+      old_contact: oldContact || null,
+      client_source: clientSource || null,
+      last_contact: lastContact,
+      owner: user.primaryEmailAddress.emailAddress,
+      date_of_contract: dateOfContract,
       notes: notesText ? notesText.split("\n").filter(n => n.trim() !== "") : []
     }
 
@@ -79,13 +184,40 @@ export default function ClientDetailPage() {
   }
 
   if (loading) return <div>
-    <h1 className="text-center text-2xl font-bold text-gray-200">Loading client details...</h1>
+    <h1 className="text-center text-2xl font-bold text-gray-200">Loading client details...
+      <Button
+            type="button"
+            onClick={() => navigate("/mortgage-clients")}
+            className="hover:bg-gray-400"
+            variant="secondary"
+          >
+            ← Back
+          </Button>
+    </h1>
   </div>
   if (error) return <div>
-    <h1 className="text-center text-2xl font-bold text-gray-200">{error}</h1>
+    <h1 className="text-center text-2xl font-bold text-gray-200">{error}
+      <Button
+            type="button"
+            onClick={() => navigate("/mortgage-clients")}
+            className="hover:bg-gray-400"
+            variant="secondary"
+          >
+            ← Back
+          </Button>
+    </h1>
   </div>
   if (!client) return <div>
-    <h1 className="text-center text-2xl font-bold text-gray-200">No client found with ID: {id}</h1>
+    <h1 className="text-center text-2xl font-bold text-gray-200">No client found with ID: {id}
+      <Button
+            type="button"
+            onClick={() => navigate("/mortgage-clients")}
+            className="hover:bg-gray-400"
+            variant="secondary"
+          >
+            ← Back
+          </Button>
+    </h1>
   </div>
 
   return (
@@ -103,15 +235,13 @@ export default function ClientDetailPage() {
           <InputWithLabel
             id="first_name"
             label="First Name"
-            value={client.first_name ?? ""}
-            onChange={(v) => handleChange("first_name", v)}
-          />
+            value={firstName}
+            onChange={(e) => setFirstName(e.target.value)} />
           <InputWithLabel
             id="last_name"
             label="Last Name"
-            value={client.last_name ?? ""}
-            onChange={(v) => handleChange("last_name", v)}
-          />
+            value={lastName}
+            onChange={(e) => setLastName(e.target.value)} />
           <SelectWithLabel id="status" label="Status" value={client.status} onChange={handleChange} options={statusOptions} />
         </div>
 
@@ -120,21 +250,20 @@ export default function ClientDetailPage() {
           <InputWithLabel
             id="home_phone"
             label="Home Phone"
-            value={client.home_phone ?? ""}
-            onChange={(v) => handleChange("home_phone", v)}
+            value={homePhone}
+            onChange={(e) => setHomePhone(e.target.value)}
           />
           <InputWithLabel
             id="mobile_phone"
             label="Mobile Phone"
-            value={client.mobile_phone ?? ""}
-            onChange={(v) => handleChange("mobile_phone", v)}
+            value={mobilePhone}
+            onChange={(e) => setMobilePhone(e.target.value)}
           />
           <InputWithLabel
             id="email"
             label="Email"
-            value={client.email ?? ""}
-            onChange={(v) => handleChange("email", v)}
-            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
           />
         </div>
 
@@ -143,14 +272,14 @@ export default function ClientDetailPage() {
           <InputWithLabel
             id="address"
             label="Address"
-            value={client.address ?? ""}
-            onChange={(v) => handleChange("address", v)}
+            value={address}
+            onChange={(e) => setAddress(e.target.value)}
           />
           <InputWithLabel
             id="city"
             label="City"
-            value={client.city ?? ""}
-            onChange={(v) => handleChange("city", v)}
+            value={city}
+            onChange={(e) => setCity(e.target.value)}
           />
         </div>
 
@@ -166,30 +295,31 @@ export default function ClientDetailPage() {
           <InputWithLabel
             id="zipcode"
             label="Zipcode"
-            value={client.zipcode ?? ""}
-            onChange={(v) => handleChange("zipcode", v)}
+            value={zipcode}
+            onChange={(e) => setZipcode(e.target.value)}
           />
         </div>
 
         {/* Spouse, children, co-borrower */}
         <div className="grid grid-cols-3 gap-4">
           <InputWithLabel
+          type="text"
             id="spouse"
             label="Spouse"
-            value={client.spouse ?? ""}
-            onChange={(v) => handleChange("spouse", v)}
+            value={spouse}
+            onChange={(e) => setSpouse(e.target.value)}
           />
           <InputWithLabel
             id="children"
             label="Children"
-            value={client.children ?? ""}
-            onChange={(v) => handleChange("children", v)}
+            value={children}
+            onChange={(e) => setChildren(e.target.value)}
           />
           <InputWithLabel
             id="co_borrower"
             label="Co-Borrower"
-            value={client.co_borrower ?? ""}
-            onChange={(v) => handleChange("co_borrower", v)}
+            value={coBorrower}
+            onChange={(e) => setCoBorrower(e.target.value)}
           />
         </div>
 
@@ -198,14 +328,14 @@ export default function ClientDetailPage() {
           <InputWithLabel
             id="current_amount"
             label="Current Amount"
-            value={client.current_amount ?? ""}
-            onChange={(v) => handleChange("current_amount", v)}
+            value={currentAmount}
+            onChange={(e) => setCurrentAmount(e.target.value)}
           />
           <InputWithLabel
             id="prospect_amount"
             label="Prospect Amount"
-            value={client.prospect_amount ?? ""}
-            onChange={(v) => handleChange("prospect_amount", v)}
+            value={prospectAmount}
+            onChange={(e) => setProspectAmount(e.target.value)}
           />
           <DatePickerInput
             id="date_of_contract"
@@ -218,8 +348,8 @@ export default function ClientDetailPage() {
           <InputWithLabel
             id="rate"
             label="Rate"
-            value={client.rate ?? ""}
-            onChange={(v) => handleChange("rate", v)}
+            value={rate}
+            onChange={(e) => setRate(e.target.value)}
           />
         </div>
 
@@ -228,26 +358,26 @@ export default function ClientDetailPage() {
           <InputWithLabel
             id="loan_type"
             label="Loan Type"
-            value={client.loan_type ?? ""}
-            onChange={(v) => handleChange("loan_type", v)}
+            value={loanType}
+            onChange={(e) => setLoanType(e.target.value)}
           />
           <InputWithLabel
             id="sale_price"
             label="Sale Price"
-            value={client.sale_price ?? ""}
-            onChange={(v) => handleChange("sale_price", v)}
+            value={salePrice}
+            onChange={(e) => setSalePrice(e.target.value)}
           />
           <InputWithLabel
             id="subject_price"
             label="Subject Price"
-            value={client.subject_price ?? ""}
-            onChange={(v) => handleChange("subject_price", v)}
+            value={subjectPrice}
+            onChange={(e) => setSubjectPrice(e.target.value)}
           />
           <InputWithLabel
             id="subject_loan"
             label="Subject Loan"
-            value={client.subject_loan ?? ""}
-            onChange={(v) => handleChange("subject_loan", v)}
+            value={subjectLoan}
+            onChange={(e) => setSubjectLoan(e.target.value)}
           />
         </div>
 
@@ -278,8 +408,8 @@ export default function ClientDetailPage() {
           <InputWithLabel
             id="client_source"
             label="Client Source"
-            value={client.client_source ?? ""}
-            onChange={(v) => handleChange("client_source", v)}
+            value={clientSource}
+            onChange={(e) => setClientSource(e.target.value)}
           />
         </div>
 
@@ -288,14 +418,14 @@ export default function ClientDetailPage() {
           <InputWithLabel
             id="company"
             label="Company"
-            value={client.company ?? ""}
-            onChange={(v) => handleChange("company", v)}
+            value={company}
+            onChange={(e) => setCompany(e.target.value)}
           />
           <InputWithLabel
             id="job_title"
             label="Job Title"
-            value={client.job_title ?? ""}
-            onChange={(v) => handleChange("job_title", v)}
+            value={jobTitle}
+            onChange={(e) => setJobTitle(e.target.value)}
           />
         </div>
 
@@ -304,14 +434,14 @@ export default function ClientDetailPage() {
           <InputWithLabel
             id="business_email"
             label="Business Email"
-            value={client.business_email ?? ""}
-            onChange={(v) => handleChange("business_email", v)}
+            value={businessEmail}
+            onChange={(e) => setBusinessEmail(e.target.value)}
           />
           <InputWithLabel
             id="business_phone"
             label="Business Phone"
-            value={client.business_phone ?? ""}
-            onChange={(v) => handleChange("business_phone", v)}
+            value={businessPhone}
+            onChange={(e) => setBusinessEmail(e.target.value)}
           />
         </div>
 
@@ -320,14 +450,14 @@ export default function ClientDetailPage() {
           <InputWithLabel
             id="business_address"
             label="Business Address"
-            value={client.business_address ?? ""}
-            onChange={(v) => handleChange("business_address", v)}
+            value={businessAddress}
+            onChange={(e) => setBusinessAddress(e.target.value)}
           />
           <InputWithLabel
             id="business_city"
             label="Business City"
-            value={client.business_city ?? ""}
-            onChange={(v) => handleChange("business_city", v)}
+            value={businessCity}
+            onChange={(e) => setBusinessCity(e.target.value)}
           />
         </div>
 
@@ -343,22 +473,24 @@ export default function ClientDetailPage() {
           <InputWithLabel
             id="business_zip"
             label="Business Zipcode"
-            value={client.business_zip ?? ""}
-            onChange={(v) => handleChange("business_zip", v)}
+            value={businessZip}
+            onChange={(e) => setBusinessZip(e.target.value)}
           />
           <InputWithLabel
             id="business_address_po"
             label="Business PO Box"
-            value={client.business_address_po ?? ""}
-            onChange={(v) => handleChange("business_address_po", v)}
+            value={businessAddressPO}
+            onChange={(e) => setBusinessAddressPO(e.target.value)}
+
           />
         </div>
         <div className="mt-4">
           <InputWithLabel
               id="sm_link"
               label="SM Link"
-              value={client.sm_link ?? ""}
-              onChange={(v) => handleChange("sm_link", v)}
+              value={smLink}
+              onChange={(e) => setSmLink(e.target.value)}
+
             />
         </div>
 
